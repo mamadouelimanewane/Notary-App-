@@ -5,10 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
-// ──────────────────────────────────────────────────────────────
-// Mapping complet qui accepte les valeurs avec ou sans accent
-// et renvoie exactement ce qu'attend ton type Acte dans lib/db.ts
-// ──────────────────────────────────────────────────────────────
+// Mapping qui accepte avec ou sans accent → renvoie exactement la version accentuée attendue par ton type Acte
 const ACTE_TYPE_MAP: Record<string, string> = {
   CONTRAT_MARIAGE: "CONTRAT_MARIAGE",
   DONATION_SIMPLE: "DONATION_SIMPLE",
@@ -157,9 +154,6 @@ export async function createTransaction(formData: FormData) {
   redirect("/dashboard/comptabilite");
 }
 
-// ──────────────────────────────────────────────────────────────
-// FONCTION CORRIGÉE DÉFINITIVEMENT – accepte avec ou sans accent
-// ──────────────────────────────────────────────────────────────
 export async function saveActeMetadata(formData: FormData) {
   const typeRaw = formData.get("type") as string;
   const category = formData.get("category") as string;
@@ -174,7 +168,6 @@ export async function saveActeMetadata(formData: FormData) {
     throw new Error("Champs obligatoires manquants");
   }
 
-  // Normalisation sans accent pour matcher la clé du mapping
   const key = typeRaw
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -213,4 +206,43 @@ export async function createTemplate(formData: FormData) {
     throw new Error("Champs obligatoires manquants");
   }
 
-  const variables = variablesStr ? JSON.parse
+  const variables = variablesStr ? JSON.parse(variablesStr) : [];
+
+  const newTemplate = {
+    id: `template-${uuidv4()}`,
+    name,
+    acteType,
+    category,
+    content,
+    variables,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isDefault: false,
+  };
+
+  db.addTemplate(newTemplate);
+  revalidatePath("/dashboard/templates");
+  redirect("/dashboard/templates");
+}
+
+export async function updateTemplate(formData: FormData) {
+  const id = formData.get("id") as string;
+  const name = formData.get("name") as string;
+  const content = formData.get("content") as string;
+  const variablesStr = formData.get("variables") as string;
+
+  if (!id || !name || !content) {
+    throw new Error("Champs obligatoires manquants");
+  }
+
+  const variables = variablesStr ? JSON.parse(variablesStr) : [];
+
+  db.updateTemplate(id, { name, content, variables });
+  revalidatePath("/dashboard/templates");
+  redirect("/dashboard/templates");
+}
+
+export async function deleteTemplate(id: string) {
+  db.deleteTemplate(id);
+  revalidatePath("/dashboard/templates");
+}
