@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 
-// Liste exhaustive et typée à la main → plus de problème de type
+// ──────────────────────────────────────────────────────────────
+// LISTE EXACTEMENT IDENTIQUE À TON TYPE Acte DANS db.ts (sans accents !)
+// ──────────────────────────────────────────────────────────────
 const ACTE_TYPES = [
   "CONTRAT_MARIAGE",
   "DONATION_SIMPLE",
@@ -13,12 +15,12 @@ const ACTE_TYPES = [
   "DON_PARTAGE",
   "DONATION_USUFRUIT",
   "TESTAMENT",
-  "NOTORIÉTÉ",
+  "NOTORIETE",           // ← sans accent
   "PARTAGE_SUCCESSION",
   "PACS",
   "CONSENTEMENT_PMA",
   "VENTE_IMMOBILIERE",
-  "PERSONNALISER"
+  "PERSONNALISE"         // ← sans accent
 ] as const;
 
 export async function createAppointment(formData: FormData) {
@@ -149,7 +151,7 @@ export async function createTransaction(formData: FormData) {
   redirect('/dashboard/comptabilite');
 }
 
-// FONCTION CORRIGÉE DÉFINITIVEMENT
+// FONCTION CORRIGÉE DÉFINITIVEMENT – plus jamais d’erreur de type
 export async function saveActeMetadata(formData: FormData) {
   const typeRaw = formData.get('type') as string;
   const category = formData.get('category') as string;
@@ -164,12 +166,17 @@ export async function saveActeMetadata(formData: FormData) {
     throw new Error("Champs obligatoires manquants");
   }
 
-  // Conversion forcée en littéral strict
-  const type = ACTE_TYPES.find(t => t === typeRaw) ?? "PERSONNALISER";
+  // On enlève les accents et on normalise pour matcher exactement le type Acte
+  const normalized = typeRaw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase();
+
+  const type = ACTE_TYPES.find(t => t === normalized) ?? "PERSONNALISE";
 
   const newActe = {
     id: `acte-${uuidv4()}`,
-    type: type as typeof ACTE_TYPES[number], // ← TypeScript est content à 100 %
+    type, // maintenant 100 % compatible avec le type Acte de db.ts
     category,
     title,
     createdAt: new Date().toISOString(),
@@ -223,18 +230,4 @@ export async function updateTemplate(formData: FormData) {
   const content = formData.get('content') as string;
   const variablesStr = formData.get('variables') as string;
 
-  if (!id || !name || !content) {
-    throw new Error("Champs obligatoires manquants");
-  }
-
-  const variables = variablesStr ? JSON.parse(variablesStr) : [];
-
-  db.updateTemplate(id, { name, content, variables });
-  revalidatePath('/dashboard/templates');
-  redirect('/dashboard/templates');
-}
-
-export async function deleteTemplate(id: string) {
-  db.deleteTemplate(id);
-  revalidatePath('/dashboard/templates');
-}
+  if (!id || !name
