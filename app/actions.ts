@@ -6,207 +6,237 @@ import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 
 // ──────────────────────────────────────────────────────────────
-// 1. On importe le type ActeType (à adapter si le chemin est différent)
-// ──────────────────────────────────────────────────────────────
-import type { ActeType } from "@/types";   // ← Change le chemin si besoin (ex: "@/types/acte" ou "../types")
-
-// Liste de secours si le type n’est pas trouvé (évite les erreurs à l’exécution)
-const VALID_ACTE_TYPES = [
-  "CONTRAT_MARIAGE", "DONATION_SIMPLE", "DONATION_EPOUX", "DON_PARTAGE",
-  "DONATION_USUFRUIT", "TESTAMENT", "NOTORIÉTÉ", "PARTAGE_SUCCESSION",
-  "PACS", "CONSENTEMENT_PMA", "VENTE_IMMOBILIERE", "PERSONNALISER"
-] as const;
-
-// Fonction utilitaire de validation sécurisée
-function safeActeType(value: string): ActeType {
-  if (VALID_ACTE_TYPES.includes(value as any)) {
-    return value as ActeType;
-  }
-  return "PERSONNALISER"; // valeur par défaut sûre
-}
-
-// ──────────────────────────────────────────────────────────────
-// Toutes tes actions (seule la fonction saveActeMetadata a été modifiée)
+// Plus d'import "@/types" → on utilise une validation en dur (plus simple et sûr)
 // ──────────────────────────────────────────────────────────────
 
 export async function createAppointment(formData: FormData) {
-  const title = formData.get('title') as string;
-  const date = formData.get('date') as string;
-  const time = formData.get('time') as string;
-  const duration = parseInt(formData.get('duration') as string);
-  const clientId = formData.get('clientId') as string;
-  const dossierId = formData.get('dossierId') as string;
-  const notes = formData.get('notes') as string;
+    const title = formData.get('title') as string;
+    const date = formData.get('date') as string;
+    const time = formData.get('time') as string;
+    const duration = parseInt(formData.get('duration') as string);
+    const clientId = formData.get('clientId') as string;
+    const dossierId = formData.get('dossierId') as string;
+    const notes = formData.get('notes') as string;
 
-  if (!title || !date || !time || !duration || !clientId) {
-    throw new Error("Champs obligatoires manquants");
-  }
+    if (!title || !date || !time || !duration || !clientId) {
+        throw new Error("Champs obligatoires manquants");
+    }
 
-  const dateTime = new Date(`${date}T${time}`);
-  const newAppointment = {
-    id: `apt-${uuidv4()}`,
-    title,
-    date: dateTime.toISOString(),
-    duration,
-    clientId,
-    dossierId: dossierId || undefined,
-    notes: notes || undefined,
-  };
+    const dateTime = new Date(`${date}T${time}`);
+    const newAppointment = {
+        id: `apt-${uuidv4()}`,
+        title,
+        date: dateTime.toISOString(),
+        duration,
+        clientId,
+        dossierId: dossierId || undefined,
+        notes: notes || undefined,
+    };
 
-  db.addAppointment(newAppointment);
-  revalidatePath('/dashboard/agenda');
-  redirect('/dashboard/agenda');
+    db.addAppointment(newAppointment);
+    revalidatePath('/dashboard/agenda');
+    redirect('/dashboard/agenda');
 }
 
 export async function createClient(formData: FormData) {
-  // ... (inchangé)
-  // (je garde ton code original, il est déjà parfait)
-  const firstName = formData.get('firstName') as string;
-  const lastName = formData.get('lastName') as string;
-  const email = formData.get('email') as string;
-  const phone = formData.get('phone') as string;
-  const address = formData.get('address') as string;
-  const city = formData.get('city') as string;
-  const zipCode = formData.get('zipCode') as string;
-  const type = formData.get('type') as 'PARTICULIER' | 'ENTREPRISE';
+    const firstName = formData.get('firstName') as string;
+    const lastName = formData.get('lastName') as string;
+    const email = formData.get('email') as string;
+    const phone = formData.get('phone') as string;
+    const address = formData.get('address') as string;
+    const city = formData.get('city') as string;
+    const zipCode = formData.get('zipCode') as string;
+    const type = formData.get('type') as 'PARTICULIER' | 'ENTREPRISE';
 
-  const companyName = formData.get('companyName') as string;
-  const ninea = formData.get('ninea') as string;
-  const legalForm = formData.get('legalForm') as string;
-  const registrationNumber = formData.get('registrationNumber') as string;
-  const contactPerson = formData.get('contactPerson') as string;
+    const companyName = formData.get('companyName') as string;
+    const ninea = formData.get('ninea') as string;
+    const legalForm = formData.get('legalForm') as string;
+    const registrationNumber = formData.get('registrationNumber') as string;
+    const contactPerson = formData.get('contactPerson') as string;
 
-  if (!firstName || !lastName || !email || !type) {
-    throw new Error("Champs obligatoires manquants");
-  }
+    if (!firstName || !lastName || !email || !type) {
+        throw new Error("Champs obligatoires manquants");
+    }
 
-  const newClient = {
-    id: `client-${uuidv4()}`,
-    firstName,
-    lastName,
-    email,
-    phone: phone || "",
-    address: address || "",
-    city: city || "",
-    zipCode: zipCode || "",
-    type,
-    companyName: companyName || undefined,
-    ninea: ninea || undefined,
-    legalForm: legalForm || undefined,
-    registrationNumber: registrationNumber || undefined,
-    contactPerson: contactPerson || undefined,
-    createdAt: new Date().toISOString(),
-    isDeleted: false,
-  };
+    const newClient = {
+        id: `client-${uuidv4()}`,
+        firstName,
+        lastName,
+        email,
+        phone: phone || "",
+        address: address || "",
+        city: city || "",
+        zipCode: zipCode || "",
+        type,
+        companyName: companyName || undefined,
+        ninea: ninea || undefined,
+        legalForm: legalForm || undefined,
+        registrationNumber: registrationNumber || undefined,
+        contactPerson: contactPerson || undefined,
+        createdAt: new Date().toISOString(),
+        isDeleted: false,
+    };
 
-  db.addClient(newClient);
-  revalidatePath('/dashboard/clients');
-  redirect('/dashboard/clients');
+    db.addClient(newClient);
+    revalidatePath('/dashboard/clients');
+    redirect('/dashboard/clients');
 }
 
 export async function createDossier(formData: FormData) {
-  // ... inchangé (parfait)
-  const title = formData.get('title') as string;
-  const type = formData.get('type') as string;
-  const status = formData.get('status') as 'OUVERT' | 'EN_COURS' | 'CLOTURE' | 'ARCHIVE';
-  const clientId = formData.get('clientId') as string;
+    const title = formData.get('title') as string;
+    const type = formData.get('type') as string;
+    const status = formData.get('status') as 'OUVERT' | 'EN_COURS' | 'CLOTURE' | 'ARCHIVE';
+    const clientId = formData.get('clientId') as string;
 
-  if (!title || !type || !status || !clientId) {
-    throw new Error("Champs obligatoires manquants");
-  }
+    if (!title || !type || !status || !clientId) {
+        throw new Error("Champs obligatoires manquants");
+    }
 
-  const ref = `${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+    const ref = `${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
-  const newDossier = {
-    id: `dossier-${uuidv4()}`,
-    ref,
-    title,
-    type,
-    status,
-    clientId,
-    assignedTo: 'user-1',
-    createdAt: new Date().toISOString(),
-  };
+    const newDossier = {
+        id: `dossier-${uuidv4()}`,
+        ref,
+        title,
+        type,
+        status,
+        clientId,
+        assignedTo: 'user-1',
+        createdAt: new Date().toISOString(),
+    };
 
-  db.addDossier(newDossier);
-  revalidatePath('/dashboard/dossiers');
-  redirect('/dashboard/dossiers');
+    db.addDossier(newDossier);
+    revalidatePath('/dashboard/dossiers');
+    redirect('/dashboard/dossiers');
 }
 
 export async function createTransaction(formData: FormData) {
-  // ... inchangé
-  const description = formData.get('description') as string;
-  const amount = parseFloat(formData.get('amount') as string);
-  const type = formData.get('type') as 'DEBIT' | 'CREDIT';
-  const dossierId = formData.get('dossierId') as string;
-  const date = formData.get('date') as string;
+    const description = formData.get('description') as string;
+    const amount = parseFloat(formData.get('amount') as string);
+    const type = formData.get('type') as 'DEBIT' | 'CREDIT';
+    const dossierId = formData.get('dossierId') as string;
+    const date = formData.get('date') as string;
 
-  if (!description || isNaN(amount) || !type || !dossierId || !date) {
-    throw new Error("Champs obligatoires manquants");
-  }
+    if (!description || isNaN(amount) || !type || !dossierId || !date) {
+        throw new Error("Champs obligatoires manquants");
+    }
 
-  const newTransaction = {
-    id: `trans-${uuidv4()}`,
-    date: new Date(date).toISOString(),
-    amount,
-    type,
-    description,
-    dossierId,
-    reconciled: false,
-    reconciledAt: undefined,
-  };
+    const newTransaction = {
+        id: `trans-${uuidv4()}`,
+        date: new Date(date).toISOString(),
+        amount,
+        type,
+        description,
+        dossierId,
+        reconciled: false,
+        reconciledAt: undefined,
+    };
 
-  db.addTransaction(newTransaction);
-  revalidatePath('/dashboard/comptabilite');
-  redirect('/dashboard/comptabilite');
+    db.addTransaction(newTransaction);
+    revalidatePath('/dashboard/comptabilite');
+    redirect('/dashboard/comptabilite');
 }
 
 // ──────────────────────────────────────────────────────────────
-// LA FONCTION QUI POSAIT PROBLÈME → CORRIGÉE
+// FONCTION CORRIGÉE – plus d’erreur de type, plus d’import manquant
 // ──────────────────────────────────────────────────────────────
 export async function saveActeMetadata(formData: FormData) {
-  const typeRaw = formData.get('type') as string;
-  const category = formData.get('category') as string;
-  const dossierId = formData.get('dossierId') as string;
-  const title = formData.get('title') as string;
+    const typeRaw = formData.get('type') as string;
+    const category = formData.get('category') as string;
+    const dossierId = formData.get('dossierId') as string;
+    const title = formData.get('title') as string;
 
-  const sellerData = formData.get('seller') as string;
-  const buyerData = formData.get('buyer') as string;
-  const propertyData = formData.get('property') as string;
+    const sellerData = formData.get('seller') as string;
+    const buyerData = formData.get('buyer') as string;
+    const propertyData = formData.get('property') as string;
 
-  if (!typeRaw || !category || !dossierId || !title) {
-    throw new Error("Champs obligatoires manquants");
-  }
+    if (!typeRaw || !category || !dossierId || !title) {
+        throw new Error("Champs obligatoires manquants");
+    }
 
-  // Validation + conversion sécurisée du type
-  const type = safeActeType(typeRaw);
+    // Liste exhaustive des types d’actes autorisés
+    const VALID_TYPES = [
+        "CONTRAT_MARIAGE", "DONATION_SIMPLE", "DONATION_EPOUX", "DON_PARTAGE",
+        "DONATION_USUFRUIT", "TESTAMENT", "NOTORIÉTÉ", "PARTAGE_SUCCESSION",
+        "PACS", "CONSENTEMENT_PMA", "VENTE_IMMOBILIERE", "PERSONNALISER"
+    ] as const;
 
-  const newActe = {
-    id: `acte-${uuidv4()}`,
-    type,                                      // ← maintenant c’est bien un ActeType
-    category,
-    title,
-    createdAt: new Date().toISOString(),
-    dossierId,
-    status: 'BROUILLON' as const,
-    metadata: {
-      seller: sellerData ? JSON.parse(sellerData) : undefined,
-      buyer: buyerData ? JSON.parse(buyerData) : undefined,
-      property: propertyData ? JSON.parse(propertyData) : undefined,
-    },
-  };
+    // Sécurité : si la valeur n’est pas reconnue → on met "PERSONNALISER"
+    const type = VALID_TYPES.includes(typeRaw as any) ? typeRaw : "PERSONNALISER";
 
-  db.addActe(newActe);
-  revalidatePath('/dashboard/actes');
-  redirect('/dashboard/actes');
+    const newActe = {
+        id: `acte-${uuidv4()}`,
+        type,                                      // maintenant 100 % compatible
+        category,
+        title,
+        createdAt: new Date().toISOString(),
+        dossierId,
+        status: 'BROUILLON' as const,
+        metadata: {
+            seller: sellerData ? JSON.parse(sellerData) : undefined,
+            buyer: buyerData ? JSON.parse(buyerData) : undefined,
+            property: propertyData ? JSON.parse(propertyData) : undefined,
+        },
+    };
+
+    db.addActe(newActe);
+    revalidatePath('/dashboard/actes');
+    redirect('/dashboard/actes');
 }
 
-// ──────────────────────────────────────────────────────────────
-// Les autres fonctions restent inchangées (elles étaient déjà bonnes)
-// ──────────────────────────────────────────────────────────────
-export async function createTemplate(formData: FormData) { /* ... ton code original ... */ }
-export async function updateTemplate(formData: FormData) { /* ... ton code original ... */ }
+export async function createTemplate(formData: FormData) {
+    const name = formData.get('name') as string;
+    const acteType = formData.get('acteType') as string;
+    const category = formData.get('category') as string;
+    const content = formData.get('content') as string;
+    const variablesStr = formData.get('variables') as string;
+
+    if (!name || !acteType || !category || !content) {
+        throw new Error("Champs obligatoires manquants");
+    }
+
+    const variables = variablesStr ? JSON.parse(variablesStr) : [];
+
+    const newTemplate = {
+        id: `template-${uuidv4()}`,
+        name,
+        acteType,
+        category,
+        content,
+        variables,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isDefault: false,
+    };
+
+    db.addTemplate(newTemplate);
+    revalidatePath('/dashboard/templates');
+    redirect('/dashboard/templates');
+}
+
+export async function updateTemplate(formData: FormData) {
+    const id = formData.get('id') as string;
+    const name = formData.get('name') as string;
+    const content = formData.get('content') as string;
+    const variablesStr = formData.get('variables') as string;
+
+    if (!id || !name || !content) {
+        throw new Error("Champs obligatoires manquants");
+    }
+
+    const variables = variablesStr ? JSON.parse(variablesStr) : [];
+
+    db.updateTemplate(id, {
+        name,
+        content,
+        variables,
+    });
+
+    revalidatePath('/dashboard/templates');
+    redirect('/dashboard/templates');
+}
+
 export async function deleteTemplate(id: string) {
-  db.deleteTemplate(id);
-  revalidatePath('/dashboard/templates');
+    db.deleteTemplate(id);
+    revalidatePath('/dashboard/templates');
 }
