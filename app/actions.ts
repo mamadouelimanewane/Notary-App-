@@ -5,9 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 
-// ──────────────────────────────────────────────────────────────
-// LISTE EXACTEMENT IDENTIQUE À TON TYPE Acte DANS db.ts (sans accents !)
-// ──────────────────────────────────────────────────────────────
+// Liste exhaustive des types d'actes (exactement comme dans ton type Acte, sans accents)
 const ACTE_TYPES = [
   "CONTRAT_MARIAGE",
   "DONATION_SIMPLE",
@@ -15,12 +13,12 @@ const ACTE_TYPES = [
   "DON_PARTAGE",
   "DONATION_USUFRUIT",
   "TESTAMENT",
-  "NOTORIETE",           // ← sans accent
+  "NOTORIETE",
   "PARTAGE_SUCCESSION",
   "PACS",
   "CONSENTEMENT_PMA",
   "VENTE_IMMOBILIERE",
-  "PERSONNALISE"         // ← sans accent
+  "PERSONNALISE"
 ] as const;
 
 export async function createAppointment(formData: FormData) {
@@ -151,7 +149,6 @@ export async function createTransaction(formData: FormData) {
   redirect('/dashboard/comptabilite');
 }
 
-// FONCTION CORRIGÉE DÉFINITIVEMENT – plus jamais d’erreur de type
 export async function saveActeMetadata(formData: FormData) {
   const typeRaw = formData.get('type') as string;
   const category = formData.get('category') as string;
@@ -166,7 +163,7 @@ export async function saveActeMetadata(formData: FormData) {
     throw new Error("Champs obligatoires manquants");
   }
 
-  // On enlève les accents et on normalise pour matcher exactement le type Acte
+  // Normalisation des accents pour matcher le type Acte
   const normalized = typeRaw
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -176,7 +173,7 @@ export async function saveActeMetadata(formData: FormData) {
 
   const newActe = {
     id: `acte-${uuidv4()}`,
-    type, // maintenant 100 % compatible avec le type Acte de db.ts
+    type,
     category,
     title,
     createdAt: new Date().toISOString(),
@@ -230,4 +227,18 @@ export async function updateTemplate(formData: FormData) {
   const content = formData.get('content') as string;
   const variablesStr = formData.get('variables') as string;
 
-  if (!id || !name
+  if (!id || !name || !content) {
+    throw new Error("Champs obligatoires manquants");
+  }
+
+  const variables = variablesStr ? JSON.parse(variablesStr) : [];
+
+  db.updateTemplate(id, { name, content, variables });
+  revalidatePath('/dashboard/templates');
+  redirect('/dashboard/templates');
+}
+
+export async function deleteTemplate(id: string) {
+  db.deleteTemplate(id);
+  revalidatePath('/dashboard/templates');
+}
