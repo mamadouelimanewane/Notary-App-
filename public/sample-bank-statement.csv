@@ -1,0 +1,11 @@
+Date,Description,Montant,Type
+19/11/2025,Virement Acquéreur - Provision Dossier 2024-001,15000.00,CREDIT
+19/11/2025,Frais bancaires,12.50,DEBIT
+20/11/2025,Paiement fournisseur - Expert immobilier,450.00,DEBIT
+21/11/2025,Virement Client Martin - Honoraires,2500.00,CREDIT
+22/11/2025,Provision frais acte Dossier 2024-002,1200.00,CREDIT
+23/11/2025,Remboursement avance client,350.00,DEBIT
+24/11/2025,Virement notaire correspondant,850.00,DEBIT
+25/11/2025,Encaissement chèque - Acte notoriété,180.00,CREDIT
+26/11/2025,Virement CARPA - Séquestre,25000.00,CREDIT
+27/11/2025,Déblocage fonds - Vente finale,24500.00,DEBIT
