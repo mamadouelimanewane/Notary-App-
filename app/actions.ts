@@ -47,6 +47,13 @@ export async function createClient(formData: FormData) {
     const zipCode = formData.get('zipCode') as string;
     const type = formData.get('type') as 'PARTICULIER' | 'ENTREPRISE';
 
+    // Company-specific fields
+    const companyName = formData.get('companyName') as string;
+    const ninea = formData.get('ninea') as string;
+    const legalForm = formData.get('legalForm') as string;
+    const registrationNumber = formData.get('registrationNumber') as string;
+    const contactPerson = formData.get('contactPerson') as string;
+
     if (!firstName || !lastName || !email || !type) {
         throw new Error("Champs obligatoires manquants");
     }
@@ -61,6 +68,13 @@ export async function createClient(formData: FormData) {
         city: city || "",
         zipCode: zipCode || "",
         type,
+        companyName: companyName || undefined,
+        ninea: ninea || undefined,
+        legalForm: legalForm || undefined,
+        registrationNumber: registrationNumber || undefined,
+        contactPerson: contactPerson || undefined,
+        createdAt: new Date().toISOString(),
+        isDeleted: false,
     };
 
     db.addClient(newClient);

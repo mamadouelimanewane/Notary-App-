@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import type { Account, JournalEntry, AccountEntry, Journal, FiscalPeriod, AccountingSettings } from './accounting/types';
 
 const DB_PATH = path.join(process.cwd(), 'data.json');
 
@@ -25,6 +26,14 @@ export interface Client {
     city: string;
     zipCode: string;
     type: 'PARTICULIER' | 'ENTREPRISE';
+    // Champs spécifiques aux entreprises
+    companyName?: string;
+    ninea?: string; // Numéro d'Identification National des Entreprises et Associations (Sénégal)
+    legalForm?: string; // SARL, SAS, SA, etc.
+    registrationNumber?: string; // Numéro au RCCM (Registre du Commerce et du Crédit Mobilier)
+    contactPerson?: string; // Personne de contact pour les entreprises
+    isDeleted?: boolean;
+    createdAt?: string;
 }
 
 export interface Dossier {
@@ -111,6 +120,29 @@ export interface BankTransaction {
     reconciledAt?: string;
 }
 
+export interface Signature {
+    id: string;
+    userId: string;
+    signatureData: string; // Base64 encoded signature image
+    createdAt: string;
+    isActive: boolean;
+}
+
+export interface AppSettings {
+    id: string;
+    officeName: string;
+    address: string;
+    phone: string;
+    email: string;
+    tvaNumber: string;
+    legalMentions: string;
+    securitySettings: {
+        sessionTimeout: number;
+        maxLoginAttempts: number;
+    };
+    updatedAt: string;
+}
+
 export interface DatabaseSchema {
     users: User[];
     clients: Client[];
@@ -121,6 +153,15 @@ export interface DatabaseSchema {
     templates: Template[];
     bankStatements: BankStatement[];
     bankTransactions: BankTransaction[];
+    signatures: Signature[];
+    settings: AppSettings[];
+    // OHADA Accounting
+    accounts: Account[];
+    journals: Journal[];
+    journalEntries: JournalEntry[];
+    accountEntries: AccountEntry[];
+    fiscalPeriods: FiscalPeriod[];
+    accountingSettings: AccountingSettings;
 }
 
 const initialData: DatabaseSchema = {
@@ -133,6 +174,35 @@ const initialData: DatabaseSchema = {
     templates: [],
     bankStatements: [],
     bankTransactions: [],
+    signatures: [],
+    settings: [{
+        id: 'default',
+        officeName: 'Étude Notariale',
+        address: '',
+        phone: '',
+        email: '',
+        tvaNumber: '',
+        legalMentions: '',
+        securitySettings: {
+            sessionTimeout: 3600,
+            maxLoginAttempts: 5
+        },
+        updatedAt: new Date().toISOString()
+    }],
+    // OHADA Accounting
+    accounts: [],
+    journals: [],
+    journalEntries: [],
+    accountEntries: [],
+    fiscalPeriods: [],
+    accountingSettings: {
+        fiscalYearStart: '01-01',
+        tvaRate: 18,
+        currency: 'FCFA',
+        decimalPlaces: 0,
+        autoImputationEnabled: true,
+        requireValidation: false
+    }
 };
 
 export class JsonDB {
@@ -152,6 +222,15 @@ export class JsonDB {
                 if (!this.data.templates) this.data.templates = [];
                 if (!this.data.bankStatements) this.data.bankStatements = [];
                 if (!this.data.bankTransactions) this.data.bankTransactions = [];
+                if (!this.data.signatures) this.data.signatures = [];
+                if (!this.data.settings) this.data.settings = [initialData.settings[0]];
+                // OHADA Accounting
+                if (!this.data.accounts) this.data.accounts = [];
+                if (!this.data.journals) this.data.journals = [];
+                if (!this.data.journalEntries) this.data.journalEntries = [];
+                if (!this.data.accountEntries) this.data.accountEntries = [];
+                if (!this.data.fiscalPeriods) this.data.fiscalPeriods = [];
+                if (!this.data.accountingSettings) this.data.accountingSettings = initialData.accountingSettings;
             } catch (error) {
                 console.error('Error reading DB, resetting:', error);
                 this.data = initialData;
@@ -173,6 +252,15 @@ export class JsonDB {
     get templates() { return this.data.templates; }
     get bankStatements() { return this.data.bankStatements; }
     get bankTransactions() { return this.data.bankTransactions; }
+    get signatures() { return this.data.signatures; }
+    get settings() { return this.data.settings[0]; }
+    // Accounting getters
+    get accounts() { return this.data.accounts; }
+    get journals() { return this.data.journals; }
+    get journalEntries() { return this.data.journalEntries; }
+    get accountEntries() { return this.data.accountEntries; }
+    get fiscalPeriods() { return this.data.fiscalPeriods; }
+    get accountingSettings() { return this.data.accountingSettings; }
 
     addUser(user: User) {
         this.data.users.push(user);
@@ -180,10 +268,58 @@ export class JsonDB {
         return user;
     }
 
+    updateUser(id: string, updates: Partial<User>) {
+        const index = this.data.users.findIndex(u => u.id === id);
+        if (index !== -1) {
+            this.data.users[index] = { ...this.data.users[index], ...updates };
+            this.save();
+            return this.data.users[index];
+        }
+        return null;
+    }
+
+    deleteUser(id: string) {
+        const index = this.data.users.findIndex(u => u.id === id);
+        if (index !== -1) {
+            this.data.users[index].isActive = false;
+            this.save();
+            return true;
+        }
+        return false;
+    }
+
+    getUsersByRole(role: User['role']) {
+        return this.data.users.filter(u => u.role === role);
+    }
+
     addClient(client: Client) {
         this.data.clients.push(client);
         this.save();
         return client;
+    }
+
+    updateClient(id: string, updates: Partial<Client>) {
+        const index = this.data.clients.findIndex(c => c.id === id);
+        if (index !== -1) {
+            this.data.clients[index] = { ...this.data.clients[index], ...updates };
+            this.save();
+            return this.data.clients[index];
+        }
+        return null;
+    }
+
+    deleteClient(id: string) {
+        const index = this.data.clients.findIndex(c => c.id === id);
+        if (index !== -1) {
+            this.data.clients[index].isDeleted = true;
+            this.save();
+            return true;
+        }
+        return false;
+    }
+
+    getClient(id: string) {
+        return this.data.clients.find(c => c.id === id && !c.isDeleted);
     }
 
     addDossier(dossier: Dossier) {
@@ -208,6 +344,30 @@ export class JsonDB {
         return transaction;
     }
 
+    updateTransaction(id: string, updates: Partial<Transaction>) {
+        const index = this.data.transactions.findIndex(t => t.id === id);
+        if (index !== -1) {
+            this.data.transactions[index] = { ...this.data.transactions[index], ...updates };
+            this.save();
+            return this.data.transactions[index];
+        }
+        return null;
+    }
+
+    deleteTransaction(id: string) {
+        const index = this.data.transactions.findIndex(t => t.id === id);
+        if (index !== -1) {
+            this.data.transactions.splice(index, 1);
+            this.save();
+            return true;
+        }
+        return false;
+    }
+
+    getTransaction(id: string) {
+        return this.data.transactions.find(t => t.id === id);
+    }
+
     addAppointment(appointment: Appointment) {
         this.data.appointments.push(appointment);
         this.save();
@@ -218,6 +378,30 @@ export class JsonDB {
         this.data.actes.push(acte);
         this.save();
         return acte;
+    }
+
+    updateActe(id: string, updates: Partial<Acte>) {
+        const index = this.data.actes.findIndex(a => a.id === id);
+        if (index !== -1) {
+            this.data.actes[index] = { ...this.data.actes[index], ...updates };
+            this.save();
+            return this.data.actes[index];
+        }
+        return null;
+    }
+
+    deleteActe(id: string) {
+        const index = this.data.actes.findIndex(a => a.id === id);
+        if (index !== -1) {
+            this.data.actes.splice(index, 1);
+            this.save();
+            return true;
+        }
+        return false;
+    }
+
+    getActe(id: string) {
+        return this.data.actes.find(a => a.id === id);
     }
 
     addTemplate(template: Template) {
@@ -244,6 +428,148 @@ export class JsonDB {
             return true;
         }
         return false;
+    }
+
+    // Signature methods
+    addSignature(signature: Signature) {
+        this.data.signatures.push(signature);
+        this.save();
+        return signature;
+    }
+
+    getUserSignature(userId: string) {
+        return this.data.signatures.find(s => s.userId === userId && s.isActive);
+    }
+
+    deactivateUserSignatures(userId: string) {
+        this.data.signatures.forEach(sig => {
+            if (sig.userId === userId && sig.isActive) {
+                sig.isActive = false;
+            }
+        });
+        this.save();
+    }
+
+    // Settings methods
+    getSettings() {
+        return this.data.settings[0];
+    }
+
+    updateSettings(updates: Partial<AppSettings>) {
+        this.data.settings[0] = {
+            ...this.data.settings[0],
+            ...updates,
+            updatedAt: new Date().toISOString()
+        };
+        this.save();
+        return this.data.settings[0];
+    }
+
+    // =====================================
+    // OHADA ACCOUNTING METHODS
+    // =====================================
+
+    // Accounts
+    addAccount(account: Account) {
+        this.data.accounts.push(account);
+        this.save();
+        return account;
+    }
+
+    updateAccount(code: string, updates: Partial<Account>) {
+        const index = this.data.accounts.findIndex(a => a.code === code);
+        if (index !== -1) {
+            this.data.accounts[index] = { ...this.data.accounts[index], ...updates };
+            this.save();
+            return this.data.accounts[index];
+        }
+        return null;
+    }
+
+    // Journals
+    addJournal(journal: Journal) {
+        this.data.journals.push(journal);
+        this.save();
+        return journal;
+    }
+
+    // Journal Entries
+    addJournalEntry(journalEntry: JournalEntry) {
+        this.data.journalEntries.push(journalEntry);
+        // Add associated account entries
+        journalEntry.entries.forEach(entry => {
+            this.data.accountEntries.push(entry);
+        });
+        this.save();
+        return journalEntry;
+    }
+
+    getJournalEntry(id: string) {
+        return this.data.journalEntries.find(je => je.id === id);
+    }
+
+    updateJournalEntry(id: string, updates: Partial<JournalEntry>) {
+        const index = this.data.journalEntries.findIndex(je => je.id === id);
+        if (index !== -1) {
+            this.data.journalEntries[index] = { ...this.data.journalEntries[index], ...updates };
+            this.save();
+            return this.data.journalEntries[index];
+        }
+        return null;
+    }
+
+    deleteJournalEntry(id: string) {
+        const journalIndex = this.data.journalEntries.findIndex(je => je.id === id);
+        if (journalIndex !== -1) {
+            // Delete associated account entries
+            this.data.accountEntries = this.data.accountEntries.filter(
+                ae => ae.journalEntryId !== id
+            );
+            // Delete journal entry
+            this.data.journalEntries.splice(journalIndex, 1);
+            this.save();
+            return true;
+        }
+        return false;
+    }
+
+    // Get entries by period
+    getJournalEntriesByPeriod(startDate: string, endDate: string) {
+        return this.data.journalEntries.filter(
+            je => je.date >= startDate && je.date <= endDate
+        );
+    }
+
+    // Get entries by account
+    getEntriesByAccount(accountCode: string) {
+        return this.data.accountEntries.filter(ae => ae.accountCode === accountCode);
+    }
+
+    // Fiscal Periods
+    addFiscalPeriod(period: FiscalPeriod) {
+        this.data.fiscalPeriods.push(period);
+        this.save();
+        return period;
+    }
+
+    closeFiscalPeriod(id: string) {
+        const index = this.data.fiscalPeriods.findIndex(fp => fp.id === id);
+        if (index !== -1) {
+            this.data.fiscalPeriods[index].isClosed = true;
+            this.data.fiscalPeriods[index].closedAt = new Date().toISOString();
+            this.save();
+            return this.data.fiscalPeriods[index];
+        }
+        return null;
+    }
+
+    updateAccountingSettings(updates: Partial<AccountingSettings>) {
+        this.data.accountingSettings = {
+            ...this.data.accountingSettings,
+            ...updates
+        };
+        this.save();
+        return this.data.accountingSettings;
     }
 }
 

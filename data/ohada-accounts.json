@@ -1,0 +1,737 @@
+{
+    "classes": [
+        {
+            "code": "1",
+            "label": "Comptes de ressources durables",
+            "type": "PASSIF"
+        },
+        {
+            "code": "2",
+            "label": "Comptes d'actif immobilisé",
+            "type": "ACTIF"
+        },
+        {
+            "code": "3",
+            "label": "Comptes de stocks",
+            "type": "ACTIF"
+        },
+        {
+            "code": "4",
+            "label": "Comptes de tiers",
+            "type": "ACTIF"
+        },
+        {
+            "code": "5",
+            "label": "Comptes de trésorerie",
+            "type": "ACTIF"
+        },
+        {
+            "code": "6",
+            "label": "Comptes de charges",
+            "type": "CHARGE"
+        },
+        {
+            "code": "7",
+            "label": "Comptes de produits",
+            "type": "PRODUIT"
+        },
+        {
+            "code": "8",
+            "label": "Comptes spéciaux",
+            "type": "RESULTAT"
+        }
+    ],
+    "accounts": [
+        {
+            "code": "10",
+            "label": "Capital",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "101",
+            "label": "Capital social",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "10"
+        },
+        {
+            "code": "12",
+            "label": "Report à nouveau",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "121",
+            "label": "Report à nouveau créditeur",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "12"
+        },
+        {
+            "code": "129",
+            "label": "Report à nouveau débiteur",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "DEBIT",
+            "parent": "12"
+        },
+        {
+            "code": "13",
+            "label": "Résultat net de l'exercice",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "131",
+            "label": "Résultat net : Bénéfice",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "13"
+        },
+        {
+            "code": "139",
+            "label": "Résultat net : Perte",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "DEBIT",
+            "parent": "13"
+        },
+        {
+            "code": "16",
+            "label": "Emprunts et dettes assimilées",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "161",
+            "label": "Emprunts obligataires",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "16"
+        },
+        {
+            "code": "162",
+            "label": "Emprunts et dettes auprès des établissements de crédit",
+            "classCode": "1",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "16"
+        },
+        {
+            "code": "21",
+            "label": "Immobilisations incorporelles",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "211",
+            "label": "Frais de développement et de prospection immobilisables",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "21"
+        },
+        {
+            "code": "212",
+            "label": "Brevets, licences, concessions et droits similaires",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "21"
+        },
+        {
+            "code": "213",
+            "label": "Logiciels",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "21"
+        },
+        {
+            "code": "218",
+            "label": "Autres droits et valeurs incorporels",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "21"
+        },
+        {
+            "code": "24",
+            "label": "Matériel",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "241",
+            "label": "Matériel et outillage industriel et commercial",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "24"
+        },
+        {
+            "code": "244",
+            "label": "Matériel et mobilier de bureau",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "24",
+            "description": "Bureaux, chaises, armoires, etc."
+        },
+        {
+            "code": "245",
+            "label": "Matériel de transport",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "24"
+        },
+        {
+            "code": "248",
+            "label": "Matériel informatique",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "24",
+            "description": "Ordinateurs, serveurs, imprimantes"
+        },
+        {
+            "code": "28",
+            "label": "Amortissements",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "281",
+            "label": "Amortissements des immobilisations incorporelles",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "CREDIT",
+            "parent": "28"
+        },
+        {
+            "code": "284",
+            "label": "Amortissements du matériel",
+            "classCode": "2",
+            "type": "ACTIF",
+            "nature": "CREDIT",
+            "parent": "28"
+        },
+        {
+            "code": "31",
+            "label": "Marchandises",
+            "classCode": "3",
+            "type": "ACTIF",
+            "nature": "DEBIT"
+        },
+        {
+            "code": "40",
+            "label": "Fournisseurs et comptes rattachés",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "401",
+            "label": "Fournisseurs - Dettes en compte",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "40",
+            "description": "Dettes fournisseurs ordinaires"
+        },
+        {
+            "code": "4091",
+            "label": "Fournisseurs - Avances et acomptes versés",
+            "classCode": "4",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "40"
+        },
+        {
+            "code": "41",
+            "label": "Clients et comptes rattachés",
+            "classCode": "4",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "411",
+            "label": "Clients",
+            "classCode": "4",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "41",
+            "description": "Créances clients (dossiers en cours)"
+        },
+        {
+            "code": "416",
+            "label": "Clients douteux",
+            "classCode": "4",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "41"
+        },
+        {
+            "code": "4191",
+            "label": "Clients - Avances et acomptes reçus",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "41"
+        },
+        {
+            "code": "42",
+            "label": "Personnel",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "421",
+            "label": "Personnel - Rémunérations dues",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "42"
+        },
+        {
+            "code": "422",
+            "label": "Personnel - Oppositions sur salaires",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "42"
+        },
+        {
+            "code": "43",
+            "label": "Organismes sociaux",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "431",
+            "label": "Sécurité sociale",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "43"
+        },
+        {
+            "code": "432",
+            "label": "Caisse de retraite obligatoire",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "43"
+        },
+        {
+            "code": "44",
+            "label": "État et collectivités publiques",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "441",
+            "label": "État - Subventions à recevoir",
+            "classCode": "4",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "44"
+        },
+        {
+            "code": "442",
+            "label": "État - Impôts et taxes recouvrables sur tiers",
+            "classCode": "4",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "44"
+        },
+        {
+            "code": "443",
+            "label": "État - TVA facturée (TVA collectée)",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "44",
+            "description": "TVA facturée aux clients"
+        },
+        {
+            "code": "445",
+            "label": "État - TVA récupérable (TVA déductible)",
+            "classCode": "4",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "44",
+            "description": "TVA sur achats et charges"
+        },
+        {
+            "code": "447",
+            "label": "État - Impôts retenus à la source",
+            "classCode": "4",
+            "type": "PASSIF",
+            "nature": "CREDIT",
+            "parent": "44"
+        },
+        {
+            "code": "52",
+            "label": "Banques",
+            "classCode": "5",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "521",
+            "label": "Banques locales",
+            "classCode": "5",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "parent": "52",
+            "description": "Comptes bancaires du cabinet"
+        },
+        {
+            "code": "57",
+            "label": "Caisse",
+            "classCode": "5",
+            "type": "ACTIF",
+            "nature": "DEBIT",
+            "description": "Espèces en caisse"
+        },
+        {
+            "code": "60",
+            "label": "Achats et variations de stocks",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "605",
+            "label": "Autres achats",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "60",
+            "description": "Fournitures de bureau, petit matériel"
+        },
+        {
+            "code": "6051",
+            "label": "Fournitures de bureau",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "605"
+        },
+        {
+            "code": "61",
+            "label": "Transports",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "611",
+            "label": "Transports sur achats",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "61"
+        },
+        {
+            "code": "62",
+            "label": "Services extérieurs A",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "621",
+            "label": "Sous-traitance générale",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "62"
+        },
+        {
+            "code": "622",
+            "label": "Locations et charges locatives",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "62"
+        },
+        {
+            "code": "624",
+            "label": "Entretien, réparations et maintenance",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "62"
+        },
+        {
+            "code": "625",
+            "label": "Primes d'assurances",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "62"
+        },
+        {
+            "code": "63",
+            "label": "Services extérieurs B",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "631",
+            "label": "Frais bancaires",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "63"
+        },
+        {
+            "code": "632",
+            "label": "Rémunérations d'intermédiaires et de conseils",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "63",
+            "isSummary": true
+        },
+        {
+            "code": "6324",
+            "label": "Honoraires des professions réglementées",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "632",
+            "description": "Honoraires confrères, experts, avocats"
+        },
+        {
+            "code": "6325",
+            "label": "Frais d'actes et de contentieux",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "632"
+        },
+        {
+            "code": "633",
+            "label": "Frais de formation du personnel",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "63"
+        },
+        {
+            "code": "637",
+            "label": "Rémunérations de personnel extérieur",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "63"
+        },
+        {
+            "code": "64",
+            "label": "Impôts et taxes",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "641",
+            "label": "Impôts et taxes directs",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "64"
+        },
+        {
+            "code": "645",
+            "label": "Impôts et taxes indirects",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "64"
+        },
+        {
+            "code": "66",
+            "label": "Charges de personnel",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "661",
+            "label": "Appointements, salaires et commissions",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "66"
+        },
+        {
+            "code": "664",
+            "label": "Charges sociales",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "66"
+        },
+        {
+            "code": "67",
+            "label": "Frais financiers et charges assimilées",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "671",
+            "label": "Intérêts des emprunts",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "67"
+        },
+        {
+            "code": "68",
+            "label": "Dotations aux amortissements",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "isSummary": true
+        },
+        {
+            "code": "681",
+            "label": "Dotations aux amortissements d'exploitation",
+            "classCode": "6",
+            "type": "CHARGE",
+            "nature": "DEBIT",
+            "parent": "68"
+        },
+        {
+            "code": "70",
+            "label": "Ventes",
+            "classCode": "7",
+            "type": "PRODUIT",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "706",
+            "label": "Prestations de services",
+            "classCode": "7",
+            "type": "PRODUIT",
+            "nature": "CREDIT",
+            "parent": "70",
+            "description": "Honoraires notariaux"
+        },
+        {
+            "code": "7061",
+            "label": "Honoraires d'actes",
+            "classCode": "7",
+            "type": "PRODUIT",
+            "nature": "CREDIT",
+            "parent": "706",
+            "description": "Honoraires pour actes notariés"
+        },
+        {
+            "code": "7062",
+            "label": "Honoraires de conseil",
+            "classCode": "7",
+            "type": "PRODUIT",
+            "nature": "CREDIT",
+            "parent": "706",
+            "description": "Honoraires de consultation"
+        },
+        {
+            "code": "7063",
+            "label": "Émoluments réglementés",
+            "classCode": "7",
+            "type": "PRODUIT",
+            "nature": "CREDIT",
+            "parent": "706",
+            "description": "Émoluments fixes réglementaires"
+        },
+        {
+            "code": "708",
+            "label": "Produits des activités annexes",
+            "classCode": "7",
+            "type": "PRODUIT",
+            "nature": "CREDIT",
+            "parent": "70"
+        },
+        {
+            "code": "77",
+            "label": "Revenus financiers et produits assimilés",
+            "classCode": "7",
+            "type": "PRODUIT",
+            "nature": "CREDIT",
+            "isSummary": true
+        },
+        {
+            "code": "771",
+            "label": "Intérêts de prêts",
+            "classCode": "7",
+            "type": "PRODUIT",
+            "nature": "CREDIT",
+            "parent": "77"
+        },
+        {
+            "code": "772",
+            "label": "Revenus de titres de placement",
+            "classCode": "7",
+            "type": "PRODUIT",
+            "nature": "CREDIT",
+            "parent": "77"
+        },
+        {
+            "code": "81",
+            "label": "Valeurs comptables des cessions d'immobilisations",
+            "classCode": "8",
+            "type": "CHARGE",
+            "nature": "DEBIT"
+        },
+        {
+            "code": "82",
+            "label": "Produits des cessions d'immobilisations",
+            "classCode": "8",
+            "type": "PRODUIT",
+            "nature": "CREDIT"
+        }
+    ]
+}
