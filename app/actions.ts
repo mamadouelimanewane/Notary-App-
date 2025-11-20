@@ -117,6 +117,8 @@ export async function createTransaction(formData: FormData) {
         type,
         description,
         dossierId,
+        reconciled: false,
+        reconciledAt: undefined,
     };
 
     db.addTransaction(newTransaction);
