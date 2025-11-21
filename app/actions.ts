@@ -5,9 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
-// ===================================================================
-// 1. Liste complète des types d'actes attendus par ta base (en ASCII)
-// ===================================================================
+// Liste complète des types valides (doit correspondre exactement à ta DB)
 const VALID_ACTE_TYPES = [
   "CONTRAT_MARIAGE",
   "DONATION_SIMPLE",
@@ -20,14 +18,11 @@ const VALID_ACTE_TYPES = [
   "PACS",
   "CONSENTEMENT_PMA",
   "VENTE_IMMOBILIERE",
-  "PERSONNALISE",
+  "PERSONNALISE"
 ] as const;
 
 type ActeType = typeof VALID_ACTE_TYPES[number];
 
-// ===================================================================
-// 2. Mapping normalisé : tout texte → valeur valide ASCII
-// ===================================================================
 const ACTE_TYPE_MAP: Record<string, ActeType> = {
   CONTRATMARIAGE: "CONTRAT_MARIAGE",
   DONATIONSIMPLE: "DONATION_SIMPLE",
@@ -39,34 +34,26 @@ const ACTE_TYPE_MAP: Record<string, ActeType> = {
   NOTORIÉTÉ: "NOTORIETE",
   PARTAGESUCCESSION: "PARTAGE_SUCCESSION",
   PACS: "PACS",
-  CONSENTEMENTPMA: "CONSENTEMENT क्रियेटिव",
+  CONSENTEMENTPMA: "CONSENTEMENT_PMA",
   VENTEIMMOBILIERE: "VENTE_IMMOBILIERE",
   PERSONNALISE: "PERSONNALISE",
   PERSONNALISÉ: "PERSONNALISE",
   PERSONNALISER: "PERSONNALISE",
 } as const;
 
-// ===================================================================
-// 3. Type guard – indispensable pour que TypeScript accepte le narrow
-// ===================================================================
-function isValidActeType(value: string): value is ActeType {
-  return VALID_ACTE_TYPES.includes(value as ActeType);
+function normalizeType(input: string): ActeType {
+  const key = input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Z0-9]/g, "")
+    .toUpperCase();
+
+  return ACTE_TYPE_MAP[key] ?? "PERSONNALISE";
 }
 
-// ===================================================================
-// Fonctions classiques (inchangées)
-// ===================================================================
-export async function createAppointment(formData: FormData) { /* ... identique ... */ }
-export async function createClient(formData: FormData) { /* ... identique ... */ }
-export async function createDossier(formData: FormData) { /* ... identique ... */ }
-export async function createTransaction(formData: FormData) { /* ... identique ... */ }
-export async function createTemplate(formData: FormData) { /* ... identique ... */ }
-export async function updateTemplate(formData: FormData) { /* ... identique ... */ }
-export async function deleteTemplate(id: string) { /* ... identique ... */ }
+// Toutes tes autres fonctions (createAppointment, createClient, etc.) restent identiques
+// ... (je les omette pour la brièveté, garde-les telles quelles)
 
-// ===================================================================
-// FONCTION CORRIGÉE – PLUS JAMAIS D'ERREUR DE TYPE
-// ===================================================================
 export async function saveActeMetadata(formData: FormData) {
   const typeRaw = formData.get("type") as string;
   const category = formData.get("category") as string;
@@ -81,23 +68,11 @@ export async function saveActeMetadata(formData: FormData) {
     throw new Error("Champs obligatoires manquants");
   }
 
-  // Normalisation complète (accents + caractères spéciaux)
-  const normalizedKey = typeRaw
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^A-Z0-9]/g, "")
-    .toUpperCase();
-
-  const mappedType = ACTE_TYPE_MAP[normalizedKey] ?? "PERSONNALISE";
-
-  // Type guard → TypeScript sait maintenant que c'est un ActeType valide
-  if (!isValidActeType(mappedType)) {
-    throw new Error(`Type d'acte invalide : ${mappedType}`);
-  }
+  const acteType = normalizeType(typeRaw);
 
   const newActe = {
     id: `acte-${uuidv4()}`,
-    type: mappedType,           // ← TypeScript est content : c’est un literal valide
+    type: acteType,  // TypeScript est content : c’est un ActeType valide
     category,
     title,
     createdAt: new Date().toISOString(),
@@ -110,7 +85,9 @@ export async function saveActeMetadata(formData: FormData) {
     },
   };
 
-  db.addActe(newActe);           // ← Plus d'erreur de type ici
+  db.addActe(newActe);
   revalidatePath("/dashboard/actes");
   redirect("/dashboard/actes");
 }
+
+// Garde toutes les autres fonctions (createTemplate, updateTemplate, etc.)
