@@ -6,24 +6,23 @@ import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
 // ===================================================================
-// MAPPING FINAL : tout en ASCII (sans accents) → compatible avec ta DB
+// MAPPING FINAL – tout en ASCII, sans doublons, 100 % compatible DB
 // ===================================================================
 const ACTE_TYPE_MAP: Record<string, string> = {
   CONTRATMARIAGE: "CONTRAT_MARIAGE",
   DONATIONSIMPLE: "DONATION_SIMPLE",
   DONATIONEPOUX: "DONATION_EPOUX",
-  DONPARTAGE: "DONATION_PARTAGE",           // ← fixé
+  DONPARTAGE: "DONATION_PARTAGE",
   DONATIONUSUFRUIT: "DONATION_USUFRUIT",
   TESTAMENT: "TESTAMENT",
-  NOTORIETE: "NOTORIETE",                  // ← sans accent (ta DB attend ça)
+  NOTORIETE: "NOTORIETE",                // sans accent → ta DB attend ça
   PARTAGESUCCESSION: "PARTAGE_SUCCESSION",
   PACS: "PACS",
   CONSENTEMENTPMA: "CONSENTEMENT_PMA",
   VENTEIMMOBILIERE: "VENTE_IMMOBILIERE",
   PERSONNALISE: "PERSONNALISE",
-  PERSONNALISÉ: "PERSONNALISE",
-  PERSONNALISER: "PERSONNALISE",
-  PERSONNALISER: "PERSONNALISE",
+  PERSONNALISÉ: "PERSONNALISE",           // on garde les deux formes comme clé
+  PERSONNALISER: "PERSONNALISE",          // mais une seule valeur → pas de doublon
 } as const;
 
 export async function createAppointment(formData: FormData) {
@@ -156,7 +155,7 @@ export async function createTransaction(formData: FormData) {
   redirect("/dashboard/comptabilite");
 }
 
-// FONCTION DÉFINITIVE – PLUS JAMAIS D'ERREUR DE BUILD
+// FONCTION DÉFINITIVE – PLUS JAMAIS D'ERREUR
 export async function saveActeMetadata(formData: FormData) {
   const typeRaw = formData.get("type") as string;
   const category = formData.get("category") as string;
@@ -171,7 +170,7 @@ export async function saveActeMetadata(formData: FormData) {
     throw new Error("Champs obligatoires manquants");
   }
 
-  // Normalisation complète : on enlève tous les accents et espaces
+  // Normalisation ultra-robuste (enlève accents + caractères spéciaux)
   const key = typeRaw
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -182,7 +181,7 @@ export async function saveActeMetadata(formData: FormData) {
 
   const newActe = {
     id: `acte-${uuidv4()}`,
-    type,                                 // 100 % compatible avec ta DB
+    type,
     category,
     title,
     createdAt: new Date().toISOString(),
