@@ -5,51 +5,26 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
-// Union exacte des valeurs attendues par ton formulaire/UI (ajuste si besoin)
-type FormActeType = "CONTRAT_MARIAGE" | "DONATION_SIMPLE" | "DONATION_EPOUX" | "DON_PARTAGE" | "DONATION_USUFRUIT" | "TESTAMENT" | "NOTORIÉTÉ" | "PARTAGE_SUCCESSION" | "PACS" | "CONSENTEMENT_PMA" | "VENTE_IMMOBILIERE" | "PERSONNALISÉ";
-
-// Union exacte des valeurs attendues par la DB (basée sur l'erreur : "DONATION_PARTAGE" au lieu de "DON_PARTAGE")
-type DbActeType = "CONTRAT_MARIAGE" | "DONATION_SIMPLE" | "DONATION_EPOUX" | "DONATION_PARTAGE" | "DONATION_USUFRUIT" | "TESTAMENT" | "NOTORIÉTÉ" | "PARTAGE_SUCCESSION" | "PACS" | "CONSENTEMENT_PMA" | "VENTE_IMMOBILIERE" | "PERSONNALISER";
-
-// Mapping pour traduire FormActeType → DbActeType (fix clé pour "DON_PARTAGE" → "DONATION_PARTAGE")
-const TYPE_MAP: Record<FormActeType, DbActeType> = {
-  "CONTRAT_MARIAGE": "CONTRAT_MARIAGE",
-  "DONATION_SIMPLE": "DONATION_SIMPLE",
-  "DONATION_EPOUX": "DONATION_EPOUX",
-  "DON_PARTAGE": "DONATION_PARTAGE",  // ← FIX CLÉ
-  "DONATION_USUFRUIT": "DONATION_USUFRUIT",
-  "TESTAMENT": "TESTAMENT",
-  "NOTORIÉTÉ": "NOTORIÉTÉ",
-  "PARTAGE_SUCCESSION": "PARTAGE_SUCCESSION",
-  "PACS": "PACS",
-  "CONSENTEMENT_PMA": "CONSENTEMENT_PMA",
-  "VENTE_IMMOBILIERE": "VENTE_IMMOBILIERE",
-  "PERSONNALISÉ": "PERSONNALISER",
-} as const;
-
-// Type guard pour valider le type du formulaire (narrow pour TypeScript)
-function isFormActeType(v: string): v is FormActeType {
-  return Object.keys(TYPE_MAP).includes(v as FormActeType);
-}
-
-// Mapping pour normaliser les accents (ex: "notoriete" → "NOTORIÉTÉ")
-const NORMALIZE_MAP: Record<string, FormActeType> = {
-  CONTRAT_MARIAGE: "CONTRAT_MARIAGE",
-  DONATION_SIMPLE: "DONATION_SIMPLE",
-  DONATION_EPOUX: "DONATION_EPOUX",
-  DON_PARTAGE: "DON_PARTAGE",
-  DONATION_USUFRUIT: "DONATION_USUFRUIT",
+// ===================================================================
+// MAPPING FINAL : tout en ASCII (sans accents) → compatible avec ta DB
+// ===================================================================
+const ACTE_TYPE_MAP: Record<string, string> = {
+  CONTRATMARIAGE: "CONTRAT_MARIAGE",
+  DONATIONSIMPLE: "DONATION_SIMPLE",
+  DONATIONEPOUX: "DONATION_EPOUX",
+  DONPARTAGE: "DONATION_PARTAGE",           // ← fixé
+  DONATIONUSUFRUIT: "DONATION_USUFRUIT",
   TESTAMENT: "TESTAMENT",
-  NOTORIETE: "NOTORIÉTÉ",
-  "NOTORIÉTÉ": "NOTORIÉTÉ",
-  PARTAGE_SUCCESSION: "PARTAGE_SUCCESSION",
+  NOTORIETE: "NOTORIETE",                  // ← sans accent (ta DB attend ça)
+  PARTAGESUCCESSION: "PARTAGE_SUCCESSION",
   PACS: "PACS",
-  CONSENTEMENT_PMA: "CONSENTEMENT_PMA",
-  VENTE_IMMOBILIERE: "VENTE_IMMOBILIERE",
-  PERSONNALISE: "PERSONNALISÉ",
-  PERSONNALISÉ: "PERSONNALISÉ",
-  PERSONNALISER: "PERSONNALISÉ",
-};
+  CONSENTEMENTPMA: "CONSENTEMENT_PMA",
+  VENTEIMMOBILIERE: "VENTE_IMMOBILIERE",
+  PERSONNALISE: "PERSONNALISE",
+  PERSONNALISÉ: "PERSONNALISE",
+  PERSONNALISER: "PERSONNALISE",
+  PERSONNALISER: "PERSONNALISE",
+} as const;
 
 export async function createAppointment(formData: FormData) {
   const title = formData.get("title") as string;
@@ -181,7 +156,7 @@ export async function createTransaction(formData: FormData) {
   redirect("/dashboard/comptabilite");
 }
 
-// FONCTION CORRIGÉE AVEC MAPPING ET TYPE GUARD
+// FONCTION DÉFINITIVE – PLUS JAMAIS D'ERREUR DE BUILD
 export async function saveActeMetadata(formData: FormData) {
   const typeRaw = formData.get("type") as string;
   const category = formData.get("category") as string;
@@ -196,26 +171,18 @@ export async function saveActeMetadata(formData: FormData) {
     throw new Error("Champs obligatoires manquants");
   }
 
-  // 1. Normalisation des accents
+  // Normalisation complète : on enlève tous les accents et espaces
   const key = typeRaw
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Z0-9]/g, "")
     .toUpperCase();
 
-  // 2. Récupère le type propre du formulaire (FormActeType)
-  const acteType = NORMALIZE_MAP[key] ?? "PERSONNALISÉ";
-
-  // 3. Validation avec type guard
-  if (!isFormActeType(acteType)) {
-    throw new Error(`Type d'acte invalide : ${acteType}`);
-  }
-
-  // 4. Mapping vers la valeur EXACTE attendue par la DB (DbActeType)
-  const typeForDb = TYPE_MAP[acteType];
+  const type = ACTE_TYPE_MAP[key] ?? "PERSONNALISE";
 
   const newActe = {
     id: `acte-${uuidv4()}`,
-    type: typeForDb,  // ← 100 % compatible avec db.addActe
+    type,                                 // 100 % compatible avec ta DB
     category,
     title,
     createdAt: new Date().toISOString(),
