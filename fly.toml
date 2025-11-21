@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for notaire on 2025-11-21T12:07:55Z
+# fly.toml app configuration file generated for notairesenegal on 2025-11-21T13:12:52Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'notaire'
+app = 'notairesenegal'
 primary_region = 'lhr'
 
 [build]
