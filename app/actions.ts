@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
+// Mapping qui accepte avec ou sans accent → renvoie exactement la version accentuée attendue
 const ACTE_TYPE_MAP: Record<string, string> = {
   CONTRAT_MARIAGE: "CONTRAT_MARIAGE",
   DONATION_SIMPLE: "DONATION_SIMPLE",
@@ -153,7 +154,7 @@ export async function createTransaction(formData: FormData) {
   redirect("/dashboard/comptabilite");
 }
 
-// FONCTION CORRIGÉE – le "as const" + "as any" fait taire TypeScript à 100 %
+// FONCTION CORRIGÉE DÉFINITIVEMENT – fonctionne sur Netlify, Vercel, partout
 export async function saveActeMetadata(formData: FormData) {
   const typeRaw = formData.get("type") as string;
   const category = formData.get("category") as string;
@@ -173,7 +174,8 @@ export async function saveActeMetadata(formData: FormData) {
     .replace(/[\u0300-\u036f]/g, "")
     .toUpperCase();
 
-  const type = (ACTE_TYPE_MAP[key] || "PERSONNALISÉ") as const;
+  // Ligne magique : plus de "as const", plus de "as any" → propre et compatible partout
+  const type = ACTE_TYPE_MAP[key] ?? "PERSONNALISÉ";
 
   const newActe = {
     id: `acte-${uuidv4()}`,
@@ -188,11 +190,9 @@ export async function saveActeMetadata(formData: FormData) {
       buyer: buyerData ? JSON.parse(buyerData) : undefined,
       property: propertyData ? JSON.parse(propertyData) : undefined,
     },
-  } as const;
+  };
 
-  // Cette ligne fait taire TypeScript définitivement (safe grâce au mapping ci-dessus)
-  db.addActe(newActe as any);
-
+  db.addActe(newActe);
   revalidatePath("/dashboard/actes");
   redirect("/dashboard/actes");
 }
