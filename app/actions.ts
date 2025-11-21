@@ -5,47 +5,29 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
-// Union type exacte basée sur l'erreur (ajuste si tu as un import précis pour ActeType)
+// Type union exacte basée sur l'erreur (ajuste si tu as un import précis pour ActeType)
 type ActeType = "CONTRAT_MARIAGE" | "DONATION_SIMPLE" | "DONATION_EPOUX" | "DON_PARTAGE" | "DONATION_USUFRUIT" | "TESTAMENT" | "NOTORIÉTÉ" | "PARTAGE_SUCCESSION" | "PACS" | "CONSENTEMENT_PMA" | "VENTE_IMMOBILIERE" | "PERSONNALISÉ";
 
-// Type guard pour valider que la valeur est un ActeType valide
-const validTypes = [
-  "CONTRAT_MARIAGE",
-  "DONATION_SIMPLE",
-  "DONATION_EPOUX",
-  "DON_PARTAGE",
-  "DONATION_USUFRUIT",
-  "TESTAMENT",
-  "NOTORIÉTÉ",
-  "PARTAGE_SUCCESSION",
-  "PACS",
-  "CONSENTEMENT_PMA",
-  "VENTE_IMMOBILIERE",
-  "PERSONNALISÉ",
-] as const;
-
-function isActeType(v: string): v is ActeType {
-  return (validTypes as readonly string[]).includes(v);
-}
-
-// Mapping pour normalisation des accents (optionnel, mais garde-le pour la robustesse)
-const ACTE_TYPE_MAP: Record<string, string> = {
-  CONTRAT_MARIAGE: "CONTRAT_MARIAGE",
-  DONATION_SIMPLE: "DONATION_SIMPLE",
-  DONATION_EPOUX: "DONATION_EPOUX",
-  DON_PARTAGE: "DON_PARTAGE",
-  DONATION_USUFRUIT: "DONATION_USUFRUIT",
-  TESTAMENT: "TESTAMENT",
-  NOTORIETE: "NOTORIÉTÉ",
+// Mapping pour traduire ActeType vers les valeurs exactes attendues par db.addActe (ex: "DON_PARTAGE" → "DONATION_PARTAGE")
+const TYPE_MAP: Record<ActeType, string> = {
+  "CONTRAT_MARIAGE": "CONTRAT_MARIAGE",
+  "DONATION_SIMPLE": "DONATION_SIMPLE",
+  "DONATION_EPOUX": "DONATION_EPOUX",
+  "DON_PARTAGE": "DONATION_PARTAGE",  // ← Fix clé : "DON_PARTAGE" → "DONATION_PARTAGE"
+  "DONATION_USUFRUIT": "DONATION_USUFRUIT",
+  "TESTAMENT": "TESTAMENT",
   "NOTORIÉTÉ": "NOTORIÉTÉ",
-  PARTAGE_SUCCESSION: "PARTAGE_SUCCESSION",
-  PACS: "PACS",
-  CONSENTEMENT_PMA: "CONSENTEMENT_PMA",
-  VENTE_IMMOBILIERE: "VENTE_IMMOBILIERE",
-  PERSONNALISE: "PERSONNALISÉ",
-  PERSONNALISÉ: "PERSONNALISÉ",
-  PERSONNALISER: "PERSONNALISÉ",
-};
+  "PARTAGE_SUCCESSION": "PARTAGE_SUCCESSION",
+  "PACS": "PACS",
+  "CONSENTEMENT_PMA": "CONSENTEMENT_PMA",
+  "VENTE_IMMOBILIERE": "VENTE_IMMOBILIERE",
+  "PERSONNALISÉ": "PERSONNALISÉ",
+} as const;
+
+// Type guard pour valider (optionnel, pour sécurité runtime)
+function isValidActeType(v: string): v is ActeType {
+  return Object.keys(TYPE_MAP).includes(v);
+}
 
 export async function createAppointment(formData: FormData) {
   const title = formData.get("title") as string;
@@ -177,7 +159,7 @@ export async function createTransaction(formData: FormData) {
   redirect("/dashboard/comptabilite");
 }
 
-// FONCTION CORRIGÉE AVEC TYPE GUARD (solution recommandée)
+// FONCTION CORRIGÉE AVEC MAPPING (solution recommandée pour matcher la DB)
 export async function saveActeMetadata(formData: FormData) {
   const typeRaw = formData.get("type") as string;
   const category = formData.get("category") as string;
@@ -198,16 +180,19 @@ export async function saveActeMetadata(formData: FormData) {
     .replace(/[\u0300-\u036f]/g, "")
     .toUpperCase();
 
-  let type = ACTE_TYPE_MAP[key] ?? "PERSONNALISÉ";
+  let acteType = ACTE_TYPE_MAP[key] ?? "PERSONNALISÉ";
 
-  // Validation avec type guard pour que TypeScript soit content
-  if (!isActeType(type)) {
-    throw new Error(`Type d'acte invalide : ${type}`);
+  // Validation avec type guard
+  if (!isValidActeType(acteType)) {
+    throw new Error(`Type d'acte invalide : ${acteType}`);
   }
+
+  // Mapping vers la valeur exacte attendue par la DB (fix clé pour "DON_PARTAGE" → "DONATION_PARTAGE")
+  const typeForDb = TYPE_MAP[acteType];
 
   const newActe = {
     id: `acte-${uuidv4()}`,
-    type,  // Maintenant TypeScript sait que c'est un ActeType valide
+    type: typeForDb,  // Maintenant c'est exactement le littéral attendu par db.addActe
     category,
     title,
     createdAt: new Date().toISOString(),
