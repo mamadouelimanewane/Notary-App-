@@ -5,7 +5,30 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
-// Mapping qui accepte avec ou sans accent → renvoie exactement la version accentuée attendue
+// Union type exacte basée sur l'erreur (ajuste si tu as un import précis pour ActeType)
+type ActeType = "CONTRAT_MARIAGE" | "DONATION_SIMPLE" | "DONATION_EPOUX" | "DON_PARTAGE" | "DONATION_USUFRUIT" | "TESTAMENT" | "NOTORIÉTÉ" | "PARTAGE_SUCCESSION" | "PACS" | "CONSENTEMENT_PMA" | "VENTE_IMMOBILIERE" | "PERSONNALISÉ";
+
+// Type guard pour valider que la valeur est un ActeType valide
+const validTypes = [
+  "CONTRAT_MARIAGE",
+  "DONATION_SIMPLE",
+  "DONATION_EPOUX",
+  "DON_PARTAGE",
+  "DONATION_USUFRUIT",
+  "TESTAMENT",
+  "NOTORIÉTÉ",
+  "PARTAGE_SUCCESSION",
+  "PACS",
+  "CONSENTEMENT_PMA",
+  "VENTE_IMMOBILIERE",
+  "PERSONNALISÉ",
+] as const;
+
+function isActeType(v: string): v is ActeType {
+  return (validTypes as readonly string[]).includes(v);
+}
+
+// Mapping pour normalisation des accents (optionnel, mais garde-le pour la robustesse)
 const ACTE_TYPE_MAP: Record<string, string> = {
   CONTRAT_MARIAGE: "CONTRAT_MARIAGE",
   DONATION_SIMPLE: "DONATION_SIMPLE",
@@ -154,7 +177,7 @@ export async function createTransaction(formData: FormData) {
   redirect("/dashboard/comptabilite");
 }
 
-// FONCTION CORRIGÉE DÉFINITIVEMENT – fonctionne sur Netlify, Vercel, partout
+// FONCTION CORRIGÉE AVEC TYPE GUARD (solution recommandée)
 export async function saveActeMetadata(formData: FormData) {
   const typeRaw = formData.get("type") as string;
   const category = formData.get("category") as string;
@@ -169,17 +192,22 @@ export async function saveActeMetadata(formData: FormData) {
     throw new Error("Champs obligatoires manquants");
   }
 
+  // Normalisation des accents
   const key = typeRaw
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toUpperCase();
 
-  // Ligne magique : plus de "as const", plus de "as any" → propre et compatible partout
-  const type = ACTE_TYPE_MAP[key] ?? "PERSONNALISÉ";
+  let type = ACTE_TYPE_MAP[key] ?? "PERSONNALISÉ";
+
+  // Validation avec type guard pour que TypeScript soit content
+  if (!isActeType(type)) {
+    throw new Error(`Type d'acte invalide : ${type}`);
+  }
 
   const newActe = {
     id: `acte-${uuidv4()}`,
-    type,
+    type,  // Maintenant TypeScript sait que c'est un ActeType valide
     category,
     title,
     createdAt: new Date().toISOString(),
