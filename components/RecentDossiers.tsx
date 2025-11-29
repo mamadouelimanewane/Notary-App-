@@ -1,4 +1,4 @@
-import { Dossier } from "@/lib/db";
+import { Dossier } from "@/types/db";
 import Link from "next/link";
 
 export function RecentDossiers({ dossiers }: { dossiers: Dossier[] }) {
@@ -22,8 +22,8 @@ export function RecentDossiers({ dossiers }: { dossiers: Dossier[] }) {
                             </div>
                             <div className="ml-auto font-medium">
                                 <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${dossier.status === 'EN_COURS' ? 'bg-blue-100 text-blue-800' :
-                                        dossier.status === 'OUVERT' ? 'bg-green-100 text-green-800' :
-                                            'bg-gray-100 text-gray-800'
+                                    dossier.status === 'OUVERT' ? 'bg-green-100 text-green-800' :
+                                        'bg-gray-100 text-gray-800'
                                     }`}>
                                     {dossier.status}
                                 </span>

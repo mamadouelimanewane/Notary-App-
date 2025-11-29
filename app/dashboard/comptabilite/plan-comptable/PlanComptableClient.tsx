@@ -1,17 +1,54 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, ChevronRight, ChevronDown, Info } from 'lucide-react';
+import { Search, Filter, ChevronRight, ChevronDown, Info, Edit, Trash2, BookOpen, Plus, Save } from 'lucide-react';
 import type { Account, AccountClass } from '@/lib/accounting/types';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
+import AccountLedger from './AccountLedger';
 
 interface PlanComptableClientProps {
     initialAccounts: Account[];
 }
 
 export default function PlanComptableClient({ initialAccounts }: PlanComptableClientProps) {
+    const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedClass, setSelectedClass] = useState<string>('ALL');
     const [expandedClasses, setExpandedClasses] = useState<string[]>(['1', '2', '3', '4', '5', '6', '7', '8']);
+
+    // State for Dialogs
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isLedgerOpen, setIsLedgerOpen] = useState(false);
+    const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+
+    // Form State
+    const [formData, setFormData] = useState({
+        code: '',
+        label: '',
+        classCode: '1',
+        type: 'ACTIF',
+        description: ''
+    });
 
     // Classes OHADA
     const classes: { code: string; label: string; color: string }[] = [
@@ -27,7 +64,7 @@ export default function PlanComptableClient({ initialAccounts }: PlanComptableCl
 
     // Filtrage des comptes
     const filteredAccounts = useMemo(() => {
-        return initialAccounts.filter(account => {
+        return accounts.filter(account => {
             const matchesSearch =
                 account.code.includes(searchQuery) ||
                 account.label.toLowerCase().includes(searchQuery.toLowerCase());
@@ -36,7 +73,7 @@ export default function PlanComptableClient({ initialAccounts }: PlanComptableCl
 
             return matchesSearch && matchesClass;
         });
-    }, [initialAccounts, searchQuery, selectedClass]);
+    }, [accounts, searchQuery, selectedClass]);
 
     // Groupement par classe pour l'affichage
     const accountsByClass = useMemo(() => {
@@ -65,6 +102,90 @@ export default function PlanComptableClient({ initialAccounts }: PlanComptableCl
         );
     };
 
+    // Actions
+    const handleCreate = async () => {
+        try {
+            const res = await fetch('/api/accounting/accounts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (!res.ok) throw new Error('Erreur lors de la création');
+
+            const newAccount = await res.json();
+            setAccounts([...accounts, newAccount]);
+            setIsCreateOpen(false);
+            setFormData({ code: '', label: '', classCode: '1', type: 'ACTIF', description: '' });
+            toast({ title: "Compte créé", description: `Le compte ${newAccount.code} a été créé.` });
+        } catch (error) {
+            toast({ title: "Erreur", description: "Impossible de créer le compte.", variant: "destructive" });
+        }
+    };
+
+    const handleUpdate = async () => {
+        if (!selectedAccount) return;
+        try {
+            const res = await fetch('/api/accounting/accounts', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: selectedAccount.code,
+                    label: formData.label,
+                    description: formData.description
+                })
+            });
+
+            if (!res.ok) throw new Error('Erreur lors de la mise à jour');
+
+            const updatedAccount = await res.json();
+            setAccounts(accounts.map(a => a.code === updatedAccount.code ? updatedAccount : a));
+            setIsEditOpen(false);
+            toast({ title: "Compte mis à jour", description: `Le compte ${updatedAccount.code} a été modifié.` });
+        } catch (error) {
+            toast({ title: "Erreur", description: "Impossible de mettre à jour le compte.", variant: "destructive" });
+        }
+    };
+
+    const handleDelete = async (code: string) => {
+        if (!confirm(`Voulez-vous vraiment supprimer le compte ${code} ?`)) return;
+
+        try {
+            const res = await fetch(`/api/accounting/accounts?code=${code}`, {
+                method: 'DELETE'
+            });
+
+            if (res.status === 409) {
+                toast({ title: "Impossible", description: "Ce compte contient des écritures.", variant: "destructive" });
+                return;
+            }
+
+            if (!res.ok) throw new Error('Erreur lors de la suppression');
+
+            setAccounts(accounts.filter(a => a.code !== code));
+            toast({ title: "Compte supprimé", description: `Le compte ${code} a été supprimé.` });
+        } catch (error) {
+            toast({ title: "Erreur", description: "Impossible de supprimer le compte.", variant: "destructive" });
+        }
+    };
+
+    const openEdit = (account: Account) => {
+        setSelectedAccount(account);
+        setFormData({
+            code: account.code,
+            label: account.label,
+            classCode: account.classCode,
+            type: account.type,
+            description: account.description || ''
+        });
+        setIsEditOpen(true);
+    };
+
+    const openLedger = (account: Account) => {
+        setSelectedAccount(account);
+        setIsLedgerOpen(true);
+    };
+
     return (
         <div className="space-y-6">
             {/* En-tête et Recherche */}
@@ -81,19 +202,9 @@ export default function PlanComptableClient({ initialAccounts }: PlanComptableCl
                 </div>
 
                 <div className="flex items-center gap-2 w-full md:w-auto">
-                    <Filter className="text-gray-400 h-5 w-5" />
-                    <select
-                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-custom-gold focus:border-transparent w-full md:w-auto"
-                        value={selectedClass}
-                        onChange={(e) => setSelectedClass(e.target.value)}
-                    >
-                        <option value="ALL">Toutes les classes</option>
-                        {classes.map(c => (
-                            <option key={c.code} value={c.code}>
-                                Classe {c.code} - {c.label}
-                            </option>
-                        ))}
-                    </select>
+                    <Button onClick={() => setIsCreateOpen(true)} className="bg-green-600 hover:bg-green-700 text-white">
+                        <Plus className="h-4 w-4 mr-2" /> Nouveau Compte
+                    </Button>
                 </div>
             </div>
 
@@ -134,6 +245,7 @@ export default function PlanComptableClient({ initialAccounts }: PlanComptableCl
                                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Libellé</th>
                                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Type</th>
                                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Nature</th>
+                                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-48">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
@@ -159,15 +271,23 @@ export default function PlanComptableClient({ initialAccounts }: PlanComptableCl
                                                             {account.nature}
                                                         </span>
                                                     </td>
-                                                </tr>
-                                            ))}
-                                            {classAccounts.length === 0 && (
-                                                <tr>
-                                                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                                        Aucun compte dans cette classe
+                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                        <div className="flex justify-end gap-2">
+                                                            <Button variant="ghost" size="icon" onClick={() => openLedger(account)} title="Grand Livre">
+                                                                <BookOpen className="h-4 w-4 text-blue-600" />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" onClick={() => openEdit(account)} title="Modifier">
+                                                                <Edit className="h-4 w-4 text-gray-600" />
+                                                            </Button>
+                                                            {!account.isSummary && (
+                                                                <Button variant="ghost" size="icon" onClick={() => handleDelete(account.code)} title="Supprimer">
+                                                                    <Trash2 className="h-4 w-4 text-red-600" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
-                                            )}
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>
@@ -176,6 +296,93 @@ export default function PlanComptableClient({ initialAccounts }: PlanComptableCl
                     );
                 })}
             </div>
+
+            {/* Dialog Création */}
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Nouveau Compte Comptable</DialogTitle>
+                        <DialogDescription>Ajouter un compte au plan comptable OHADA.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Code</Label>
+                            <Input
+                                value={formData.code}
+                                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Libellé</Label>
+                            <Input
+                                value={formData.label}
+                                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Classe</Label>
+                            <Select
+                                value={formData.classCode}
+                                onValueChange={(v) => setFormData({ ...formData, classCode: v })}
+                            >
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {classes.map(c => <SelectItem key={c.code} value={c.code}>{c.code} - {c.label}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={handleCreate}>Créer</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Dialog Modification */}
+            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Modifier Compte {selectedAccount?.code}</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Libellé</Label>
+                            <Input
+                                value={formData.label}
+                                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Description</Label>
+                            <Input
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={handleUpdate}>Enregistrer</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Dialog Grand Livre */}
+            <Dialog open={isLedgerOpen} onOpenChange={setIsLedgerOpen}>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Grand Livre - {selectedAccount?.code} {selectedAccount?.label}</DialogTitle>
+                    </DialogHeader>
+                    {selectedAccount && (
+                        <AccountLedger accountCode={selectedAccount.code} accountLabel={selectedAccount.label} />
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

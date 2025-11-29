@@ -60,17 +60,19 @@ export default function RapprochementPage() {
                 ) : (
                     <div className="space-y-3">
                         {bankStatements.map(statement => (
-                            <div key={statement.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50">
-                                <div>
-                                    <p className="font-medium">{statement.fileName}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {statement.totalTransactions} transactions • {statement.reconciledCount} rapprochées
-                                    </p>
+                            <Link href={`/dashboard/rapprochement/${statement.id}`} key={statement.id} className="block">
+                                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors">
+                                    <div>
+                                        <p className="font-medium">{statement.fileName}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {statement.totalTransactions} transactions • {statement.reconciledCount} rapprochées
+                                        </p>
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                        {new Date(statement.uploadedAt).toLocaleDateString('fr-FR')}
+                                    </div>
                                 </div>
-                                <div className="text-sm text-muted-foreground">
-                                    {new Date(statement.uploadedAt).toLocaleDateString('fr-FR')}
-                                </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}

@@ -14,6 +14,7 @@ export default function SettingsPage() {
         email: '',
         tvaNumber: '',
         legalMentions: '',
+        documentHeader: '',
         securitySettings: {
             sessionTimeout: 3600,
             maxLoginAttempts: 5
@@ -84,8 +85,8 @@ export default function SettingsPage() {
                     <button
                         onClick={() => setActiveTab('general')}
                         className={`py-2 px-4 border-b-2 transition-colors ${activeTab === 'general'
-                                ? 'border-slate-900 text-slate-900 font-medium'
-                                : 'border-transparent text-muted-foreground hover:text-slate-900'
+                            ? 'border-slate-900 text-slate-900 font-medium'
+                            : 'border-transparent text-muted-foreground hover:text-slate-900'
                             }`}
                     >
                         <Building className="inline h-4 w-4 mr-2" />
@@ -94,8 +95,8 @@ export default function SettingsPage() {
                     <button
                         onClick={() => setActiveTab('billing')}
                         className={`py-2 px-4 border-b-2 transition-colors ${activeTab === 'billing'
-                                ? 'border-slate-900 text-slate-900 font-medium'
-                                : 'border-transparent text-muted-foreground hover:text-slate-900'
+                            ? 'border-slate-900 text-slate-900 font-medium'
+                            : 'border-transparent text-muted-foreground hover:text-slate-900'
                             }`}
                     >
                         <FileText className="inline h-4 w-4 mr-2" />
@@ -104,8 +105,8 @@ export default function SettingsPage() {
                     <button
                         onClick={() => setActiveTab('security')}
                         className={`py-2 px-4 border-b-2 transition-colors ${activeTab === 'security'
-                                ? 'border-slate-900 text-slate-900 font-medium'
-                                : 'border-transparent text-muted-foreground hover:text-slate-900'
+                            ? 'border-slate-900 text-slate-900 font-medium'
+                            : 'border-transparent text-muted-foreground hover:text-slate-900'
                             }`}
                     >
                         <Shield className="inline h-4 w-4 mr-2" />
@@ -160,9 +161,20 @@ export default function SettingsPage() {
                                         value={settings.email}
                                         onChange={(e) => setSettings({ ...settings, email: e.target.value })}
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                        placeholder="contact@etude-notariale.sn"
                                     />
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">En-tête des documents</label>
+                                <textarea
+                                    value={settings.documentHeader || ''}
+                                    onChange={(e) => setSettings({ ...settings, documentHeader: e.target.value })}
+                                    rows={4}
+                                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    placeholder="Texte à afficher en haut des actes et factures (ex: Maître Dupont, Notaire à Dakar...)"
+                                />
+                                <p className="text-xs text-muted-foreground">Ce texte apparaîtra en haut de vos documents générés (PDF).</p>
                             </div>
                         </div>
                     )}

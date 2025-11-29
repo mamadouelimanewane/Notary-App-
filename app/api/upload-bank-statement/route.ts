@@ -45,13 +45,9 @@ export async function POST(req: NextRequest) {
             reconciled: false,
         }));
 
-        // Add to database (we need to add methods to db)
-        db.data.bankStatements = db.data.bankStatements || [];
-        db.data.bankTransactions = db.data.bankTransactions || [];
-
-        db.data.bankStatements.push(statement);
-        db.data.bankTransactions.push(...bankTransactions);
-        db['save'](); // Force save
+        // Add to database
+        db.addBankStatement(statement);
+        db.addBankTransactions(bankTransactions);
 
         return NextResponse.json({
             success: true,

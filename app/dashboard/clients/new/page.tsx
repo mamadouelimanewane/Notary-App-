@@ -3,8 +3,42 @@
 import { createClient } from "@/app/actions";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { IdCardScanner } from "@/components/ai/IdCardScanner";
+import { ExtractedIdentity } from "@/lib/ai/ocr-service";
 
 export default function NewClientPage() {
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        address: '',
+        zipCode: '',
+        city: '',
+        type: 'PARTICULIER',
+        // Entreprise fields
+        companyName: '',
+        ninea: '',
+        legalForm: '',
+        registrationNumber: '',
+        contactPerson: ''
+    });
+
+    const handleScanComplete = (data: ExtractedIdentity) => {
+        setFormData(prev => ({
+            ...prev,
+            firstName: data.firstName || prev.firstName,
+            lastName: data.lastName || prev.lastName,
+            // On pourrait aussi extraire l'adresse si l'OCR est assez puissant
+        }));
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             <div className="flex items-center space-x-4">
@@ -13,6 +47,9 @@ export default function NewClientPage() {
                 </Link>
                 <h1 className="text-2xl font-bold tracking-tight">Nouveau Client</h1>
             </div>
+
+            {/* Zone de Scan IA */}
+            <IdCardScanner onScanComplete={handleScanComplete} />
 
             <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
                 <form action={createClient} className="space-y-6">
@@ -24,6 +61,8 @@ export default function NewClientPage() {
                                 id="firstName"
                                 name="firstName"
                                 required
+                                value={formData.firstName}
+                                onChange={handleChange}
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 placeholder="Jean"
                             />
@@ -35,6 +74,8 @@ export default function NewClientPage() {
                                 id="lastName"
                                 name="lastName"
                                 required
+                                value={formData.lastName}
+                                onChange={handleChange}
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 placeholder="Dupont"
                             />
@@ -49,6 +90,8 @@ export default function NewClientPage() {
                                 id="email"
                                 name="email"
                                 required
+                                value={formData.email}
+                                onChange={handleChange}
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 placeholder="jean.dupont@example.com"
                             />
@@ -59,6 +102,8 @@ export default function NewClientPage() {
                                 type="tel"
                                 id="phone"
                                 name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 placeholder="06 01 02 03 04"
                             />
@@ -71,6 +116,8 @@ export default function NewClientPage() {
                             type="text"
                             id="address"
                             name="address"
+                            value={formData.address}
+                            onChange={handleChange}
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             placeholder="10 Rue de la Paix"
                         />
@@ -83,6 +130,8 @@ export default function NewClientPage() {
                                 type="text"
                                 id="zipCode"
                                 name="zipCode"
+                                value={formData.zipCode}
+                                onChange={handleChange}
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 placeholder="75001"
                             />
@@ -93,6 +142,8 @@ export default function NewClientPage() {
                                 type="text"
                                 id="city"
                                 name="city"
+                                value={formData.city}
+                                onChange={handleChange}
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 placeholder="Paris"
                             />
@@ -105,17 +156,9 @@ export default function NewClientPage() {
                             id="type"
                             name="type"
                             required
+                            value={formData.type}
+                            onChange={handleChange}
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            onChange={(e) => {
-                                const form = e.target.form;
-                                if (form) {
-                                    const isEntreprise = e.target.value === 'ENTREPRISE';
-                                    const entrepriseFields = form.querySelector('#entreprise-fields');
-                                    if (entrepriseFields) {
-                                        (entrepriseFields as HTMLElement).style.display = isEntreprise ? 'block' : 'none';
-                                    }
-                                }
-                            }}
                         >
                             <option value="PARTICULIER">Particulier</option>
                             <option value="ENTREPRISE">Entreprise</option>
@@ -123,73 +166,85 @@ export default function NewClientPage() {
                     </div>
 
                     {/* Champs spécifiques aux entreprises */}
-                    <div id="entreprise-fields" style={{ display: 'none' }} className="space-y-4 border-t pt-4">
-                        <h3 className="text-lg font-semibold">Informations Entreprise</h3>
+                    {formData.type === 'ENTREPRISE' && (
+                        <div className="space-y-4 border-t pt-4 animate-in fade-in slide-in-from-top-2">
+                            <h3 className="text-lg font-semibold">Informations Entreprise</h3>
 
-                        <div className="space-y-2">
-                            <label htmlFor="companyName" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Nom de l'Entreprise</label>
-                            <input
-                                type="text"
-                                id="companyName"
-                                name="companyName"
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                placeholder="SARL Tech Solutions"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label htmlFor="ninea" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">NINEA</label>
+                                <label htmlFor="companyName" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Nom de l'Entreprise</label>
                                 <input
                                     type="text"
-                                    id="ninea"
-                                    name="ninea"
+                                    id="companyName"
+                                    name="companyName"
+                                    value={formData.companyName}
+                                    onChange={handleChange}
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="123456789"
+                                    placeholder="SARL Tech Solutions"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label htmlFor="legalForm" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Forme Juridique</label>
-                                <select
-                                    id="legalForm"
-                                    name="legalForm"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    <option value="">Sélectionner...</option>
-                                    <option value="SARL">SARL</option>
-                                    <option value="SAS">SAS</option>
-                                    <option value="SA">SA</option>
-                                    <option value="SUARL">SUARL</option>
-                                    <option value="SNC">SNC</option>
-                                    <option value="GIE">GIE</option>
-                                    <option value="AUTRE">Autre</option>
-                                </select>
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label htmlFor="registrationNumber" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">N° RCCM</label>
-                                <input
-                                    type="text"
-                                    id="registrationNumber"
-                                    name="registrationNumber"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="SN-DKR-2024-A-12345"
-                                />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label htmlFor="ninea" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">NINEA</label>
+                                    <input
+                                        type="text"
+                                        id="ninea"
+                                        name="ninea"
+                                        value={formData.ninea}
+                                        onChange={handleChange}
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        placeholder="123456789"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label htmlFor="legalForm" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Forme Juridique</label>
+                                    <select
+                                        id="legalForm"
+                                        name="legalForm"
+                                        value={formData.legalForm}
+                                        onChange={handleChange}
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <option value="">Sélectionner...</option>
+                                        <option value="SARL">SARL</option>
+                                        <option value="SAS">SAS</option>
+                                        <option value="SA">SA</option>
+                                        <option value="SUARL">SUARL</option>
+                                        <option value="SNC">SNC</option>
+                                        <option value="GIE">GIE</option>
+                                        <option value="AUTRE">Autre</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label htmlFor="contactPerson" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Personne de Contact</label>
-                                <input
-                                    type="text"
-                                    id="contactPerson"
-                                    name="contactPerson"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="Amadou Diop"
-                                />
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label htmlFor="registrationNumber" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">N° RCCM</label>
+                                    <input
+                                        type="text"
+                                        id="registrationNumber"
+                                        name="registrationNumber"
+                                        value={formData.registrationNumber}
+                                        onChange={handleChange}
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        placeholder="SN-DKR-2024-A-12345"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label htmlFor="contactPerson" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Personne de Contact</label>
+                                    <input
+                                        type="text"
+                                        id="contactPerson"
+                                        name="contactPerson"
+                                        value={formData.contactPerson}
+                                        onChange={handleChange}
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        placeholder="Amadou Diop"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className="flex justify-end pt-4">
                         <button

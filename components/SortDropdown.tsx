@@ -42,8 +42,8 @@ export default function SortDropdown({ options, currentSort, onSort }: SortDropd
                             type="button"
                             onClick={() => handleSort(option.field)}
                             className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${isActive
-                                    ? 'bg-slate-900 text-white'
-                                    : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                                ? 'bg-blue-600 text-white shadow-sm'
+                                : 'bg-white text-slate-600 border border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200'
                                 }`}
                         >
                             <Icon className="mr-1 h-3 w-3" />

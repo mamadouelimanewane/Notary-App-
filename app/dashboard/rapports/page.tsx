@@ -25,19 +25,21 @@ export default function RapportsPage() {
     const loadData = async () => {
         try {
             // Charger données depuis les différents modules
-            const [clients, dossiers, actes, transactions, settings] = await Promise.all([
+            const [clients, dossiers, actes, transactions, settings, users] = await Promise.all([
                 fetch('/api/clients').then(r => r.json()).catch(() => ({ clients: [] })),
                 fetch('/api/dossiers').then(r => r.json()).catch(() => ({ dossiers: [] })),
                 fetch('/api/actes').then(r => r.json()).catch(() => ({ actes: [] })),
                 fetch('/api/transactions').then(r => r.json()).catch(() => ({ transactions: [] })),
-                fetch('/api/office-name').then(r => r.json()).catch(() => ({ officeName: 'Cabinet Notaire' }))
+                fetch('/api/office-name').then(r => r.json()).catch(() => ({ officeName: 'Cabinet Notaire' })),
+                fetch('/api/users').then(r => r.json()).catch(() => ({ users: [] }))
             ]);
 
             setData({
                 clients: clients.clients || [],
                 dossiers: dossiers.dossiers || [],
                 actes: actes.actes || [],
-                transactions: transactions.transactions || []
+                transactions: transactions.transactions || [],
+                users: users.users || []
             });
             setOfficeName(settings.officeName);
         } catch (error) {
@@ -75,6 +77,19 @@ export default function RapportsPage() {
 
     const dossiersChartData = Object.entries(dossiersParStatut).map(([status, count]) => ({
         status,
+        count
+    }));
+
+    // Dossiers par Responsable
+    const dossiersParResponsable = data.dossiers.reduce((acc: any, dossier: any) => {
+        const user = (data as any).users?.find((u: any) => u.id === dossier.assignedTo);
+        const userName = user ? `${user.firstName} ${user.lastName}` : 'Non assigné';
+        acc[userName] = (acc[userName] || 0) + 1;
+        return acc;
+    }, {});
+
+    const responsibleChartData = Object.entries(dossiersParResponsable).map(([name, count]) => ({
+        name,
         count
     }));
 
@@ -195,6 +210,20 @@ export default function RapportsPage() {
                             </Pie>
                             <Tooltip />
                         </PieChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Dossiers par Responsable (Nouveau) */}
+                <div className="rounded-xl border bg-white p-6 md:col-span-2">
+                    <h3 className="font-semibold mb-4">Dossiers par Responsable</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={responsibleChartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="count" fill="#10b981" />
+                        </BarChart>
                     </ResponsiveContainer>
                 </div>
             </div>

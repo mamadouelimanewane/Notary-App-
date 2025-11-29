@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createTemplate } from "@/app/actions";
 import { ACTE_TYPES, ACTE_CATEGORIES, getActesByCategory, type ActeCategory } from "@/lib/acte-types";
 import { extractVariables, validateTemplate, getSampleData, parseTemplate } from "@/lib/template-engine";
@@ -8,18 +9,39 @@ import Link from "next/link";
 import { ArrowLeft, Eye, Code } from "lucide-react";
 
 export default function NewTemplatePage() {
+    const searchParams = useSearchParams();
+    const initialContent = searchParams.get('content') || "";
+
     const [name, setName] = useState("");
     const [acteType, setActeType] = useState("");
-    const [content, setContent] = useState("");
+    const [content, setContent] = useState(initialContent);
     const [showPreview, setShowPreview] = useState(false);
+    const [fileData, setFileData] = useState<string | null>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                // Remove data URL prefix (e.g., "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,")
+                const base64Content = base64String.split(',')[1];
+                setFileData(base64Content);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const validation = validateTemplate(content);
-        if (!validation.valid) {
-            alert(`Erreurs de validation:\n${validation.errors.join('\n')}`);
-            return;
+        // Basic validation if no file is uploaded, check content
+        if (!fileData) {
+            const validation = validateTemplate(content);
+            if (!validation.valid) {
+                alert(`Erreurs de validation:\n${validation.errors.join('\n')}`);
+                return;
+            }
         }
 
         const variables = extractVariables(content);
@@ -37,6 +59,9 @@ export default function NewTemplatePage() {
         formData.append('category', acteInfo.category);
         formData.append('content', content);
         formData.append('variables', JSON.stringify(variables));
+        if (fileData) {
+            formData.append('fileData', fileData);
+        }
 
         await createTemplate(formData);
     };
@@ -96,6 +121,20 @@ export default function NewTemplatePage() {
                                 </optgroup>
                             ))}
                         </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label htmlFor="file" className="text-sm font-medium">Fichier modèle (.docx)</label>
+                        <input
+                            type="file"
+                            id="file"
+                            accept=".docx"
+                            onChange={handleFileChange}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Téléchargez un fichier Word (.docx) contenant les variables entre accolades (ex: {'{client.firstName}'}).
+                        </p>
                     </div>
                 </div>
 

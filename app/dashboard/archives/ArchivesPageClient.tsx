@@ -2,7 +2,7 @@
 
 import { Archive, FolderArchive, Search } from "lucide-react";
 import { useState, useMemo } from "react";
-import type { Acte, Dossier } from "@/lib/db";
+import type { Acte, Dossier } from "@/types/db";
 
 interface ArchivesPageClientProps {
     actesArchives: Acte[];
@@ -14,13 +14,13 @@ export default function ArchivesPageClient({ actesArchives, dossiersArchives }: 
     const [selectedYear, setSelectedYear] = useState<string>("all");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-    // Obtenir toutes les ann\u00e9es disponibles
+    // Obtenir toutes les années disponibles
     const availableYears = useMemo(() => {
         const years = new Set<number>();
         actesArchives.forEach(a => years.add(new Date(a.createdAt).getFullYear()));
         dossiersArchives.forEach(d => years.add(new Date(d.createdAt).getFullYear()));
         return Array.from(years).sort((a, b) => b - a);
-    }, [actesArchives.length, dossiersArchives.length]);
+    }, [actesArchives, dossiersArchives]);
 
     // Filtrer les archives
     const filteredActes = useMemo(() => {
@@ -46,9 +46,9 @@ export default function ArchivesPageClient({ actesArchives, dossiersArchives }: 
         });
     }, [dossiersArchives, selectedYear, searchTerm]);
 
-    // Statistiques par cat\u00e9gorie
+    // Statistiques par catégorie
     const stats = useMemo(() => {
-        const categories = {
+        const categories: Record<string, number> = {
             FAMILLE: 0,
             IMMOBILIER: 0,
             AFFAIRES: 0,
@@ -66,13 +66,13 @@ export default function ArchivesPageClient({ actesArchives, dossiersArchives }: 
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Archives</h1>
+                    <h1 className="text-3xl font-bold tracking-tight font-serif text-primary">Archives</h1>
                     <p className="text-muted-foreground mt-1">Consultation et gestion des documents archivés</p>
                 </div>
             </div>
 
             {/* Filtres et recherche */}
-            <div className="rounded-xl border bg-card p-4">
+            <div className="rounded-xl border bg-card text-card-foreground p-4 shadow-sm">
                 <div className="grid md:grid-cols-3 gap-4">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -81,14 +81,14 @@ export default function ArchivesPageClient({ actesArchives, dossiersArchives }: 
                             placeholder="Rechercher par titre, type ou référence..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border rounded-md"
+                            className="w-full pl-10 pr-4 py-2 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                     </div>
 
                     <select
                         value={selectedYear}
                         onChange={(e) => setSelectedYear(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-md"
+                        className="w-full px-4 py-2 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <option value="all">📅 Toutes les années</option>
                         {availableYears.map(year => (
@@ -99,7 +99,7 @@ export default function ArchivesPageClient({ actesArchives, dossiersArchives }: 
                     <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-md"
+                        className="w-full px-4 py-2 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <option value="all">🏷️ Toutes les catégories</option>
                         <option value="FAMILLE">👨‍👩‍👧 Famille</option>
@@ -112,27 +112,27 @@ export default function ArchivesPageClient({ actesArchives, dossiersArchives }: 
 
             {/* Statistiques */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-xl border bg-card p-6">
+                <div className="rounded-xl border bg-card text-card-foreground p-6 shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Actes archivés</p>
                             <p className="text-3xl font-bold mt-2">{filteredActes.length}</p>
                         </div>
-                        <Archive className="h-10 w-10 text-slate-400" />
+                        <Archive className="h-10 w-10 text-primary/50" />
                     </div>
                 </div>
 
-                <div className="rounded-xl border bg-card p-6">
+                <div className="rounded-xl border bg-card text-card-foreground p-6 shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Dossiers archivés</p>
                             <p className="text-3xl font-bold mt-2">{filteredDossiers.length}</p>
                         </div>
-                        <FolderArchive className="h-10 w-10 text-slate-400" />
+                        <FolderArchive className="h-10 w-10 text-primary/50" />
                     </div>
                 </div>
 
-                <div className="rounded-xl border bg-card p-6">
+                <div className="rounded-xl border bg-card text-card-foreground p-6 shadow-sm">
                     <div>
                         <p className="text-sm font-medium text-muted-foreground mb-2">Répartition familiale</p>
                         <div className="space-y-1 text-sm">
@@ -148,7 +148,7 @@ export default function ArchivesPageClient({ actesArchives, dossiersArchives }: 
                     </div>
                 </div>
 
-                <div className="rounded-xl border bg-card p-6">
+                <div className="rounded-xl border bg-card text-card-foreground p-6 shadow-sm">
                     <div>
                         <p className="text-sm font-medium text-muted-foreground mb-2">Répartition autres</p>
                         <div className="space-y-1 text-sm">
@@ -167,23 +167,23 @@ export default function ArchivesPageClient({ actesArchives, dossiersArchives }: 
 
             {/* Résultats */}
             <div className="space-y-4">
-                <h2 className="text-xl font-semibold">📄 Actes archivés ({filteredActes.length})</h2>
+                <h2 className="text-xl font-semibold font-serif text-foreground">📄 Actes archivés ({filteredActes.length})</h2>
                 {filteredActes.length === 0 ? (
-                    <div className="rounded-xl border bg-white p-8 text-center text-muted-foreground">
-                        Aucun acte archiv\u00e9 trouv\u00e9
+                    <div className="rounded-xl border bg-card text-card-foreground p-8 text-center text-muted-foreground border-dashed">
+                        Aucun acte archivé trouvé
                     </div>
                 ) : (
                     <div className="grid gap-3">
                         {filteredActes.slice(0, 10).map(acte => (
-                            <div key={acte.id} className="rounded-xl border bg-white p-4 hover:shadow-md transition-shadow">
+                            <div key={acte.id} className="rounded-xl border bg-card text-card-foreground p-4 hover:shadow-md transition-shadow hover:border-primary/50">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h3 className="font-semibold">{acte.title}</h3>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            {acte.type} \u2022 {new Date(acte.createdAt).toLocaleDateString('fr-FR')}
+                                            {acte.type} • {new Date(acte.createdAt).toLocaleDateString('fr-FR')}
                                         </p>
                                     </div>
-                                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-green-100 text-green-800">
+                                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-primary/10 text-primary">
                                         {acte.category}
                                     </span>
                                 </div>
@@ -194,23 +194,23 @@ export default function ArchivesPageClient({ actesArchives, dossiersArchives }: 
             </div>
 
             <div className="space-y-4">
-                <h2 className="text-xl font-semibold">📁 Dossiers archivés ({filteredDossiers.length})</h2>
+                <h2 className="text-xl font-semibold font-serif text-foreground">📁 Dossiers archivés ({filteredDossiers.length})</h2>
                 {filteredDossiers.length === 0 ? (
-                    <div className="rounded-xl border bg-white p-8 text-center text-muted-foreground">
-                        Aucun dossier archiv\u00e9 trouv\u00e9
+                    <div className="rounded-xl border bg-card text-card-foreground p-8 text-center text-muted-foreground border-dashed">
+                        Aucun dossier archivé trouvé
                     </div>
                 ) : (
                     <div className="grid gap-3">
                         {filteredDossiers.slice(0, 10).map(dossier => (
-                            <div key={dossier.id} className="rounded-xl border bg-white p-4 hover:shadow-md transition-shadow">
+                            <div key={dossier.id} className="rounded-xl border bg-card text-card-foreground p-4 hover:shadow-md transition-shadow hover:border-primary/50">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h3 className="font-semibold">{dossier.title}</h3>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            Ref: {dossier.ref} \u2022 {new Date(dossier.createdAt).toLocaleDateString('fr-FR')}
+                                            Ref: {dossier.ref} • {new Date(dossier.createdAt).toLocaleDateString('fr-FR')}
                                         </p>
                                     </div>
-                                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-gray-100 text-gray-800">
+                                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-muted text-muted-foreground">
                                         {dossier.type}
                                     </span>
                                 </div>

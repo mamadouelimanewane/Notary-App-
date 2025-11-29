@@ -1,0 +1,29 @@
+import fs from 'fs';
+import path from 'path';
+import type { Account, JournalEntry, AccountEntry, Journal, FiscalPeriod, AccountingSettings } from './accounting/types';
+import type { TaxDefinition, ActTemplate } from './taxation/types';
+import { 
+    User, Client, Dossier, Acte, Template, BankStatement, BankTransaction, 
+    Signature, AppSettings, DatabaseSchema 
+} from './types';
+import { v4 as uuidv4 } from 'uuid';
+import { Block } from './blockchain';
+
+const DB_PATH = path.join(process.cwd(), 'data.json');
+
+// Re-export types for backward compatibility if needed
+export type { User, Client, Dossier, Acte, Template, BankStatement, BankTransaction, Signature, AppSettings };
+
+// We need to define Transaction and Appointment locally or in types.ts if they are missing
+// Based on previous file content, they were used. Let's add them to types.ts later if needed, 
+// but for now I'll define them here to avoid errors if they aren't in types.ts yet.
+// Wait, I didn't add Transaction and Appointment to types.ts. I should have.
+// Let's add them to types.ts first to be clean, or define them here temporarily.
+// The previous db.ts had them.
+// Let's check what was in the previous db.ts for Transaction and Appointment.
+// It seems they were there. I missed them in types.ts.
+// I will add them to types.ts in the next step. For now, I will define them here to make db.ts compile, 
+// or better, I will update types.ts FIRST, then db.ts.
+
+// Actually, I'll update types.ts first to include Transaction and Appointment, then write db.ts.
+// This is safer.

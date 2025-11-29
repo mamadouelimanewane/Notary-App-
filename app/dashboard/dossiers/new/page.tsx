@@ -9,10 +9,10 @@ export default function NewDossierPage() {
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             <div className="flex items-center space-x-4">
-                <Link href="/dashboard/dossiers" className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                    <ArrowLeft className="h-5 w-5 text-slate-600" />
+                <Link href="/dashboard/dossiers" className="p-2 hover:bg-muted rounded-full transition-colors">
+                    <ArrowLeft className="h-5 w-5 text-muted-foreground" />
                 </Link>
-                <h1 className="text-2xl font-bold tracking-tight">Nouveau Dossier</h1>
+                <h1 className="text-2xl font-bold tracking-tight font-serif text-primary">Nouveau Dossier</h1>
             </div>
 
             <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
@@ -47,19 +47,35 @@ export default function NewDossierPage() {
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="status" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Statut</label>
+                            <label htmlFor="workflowTemplateId" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Workflow (Procédure)</label>
                             <select
-                                id="status"
-                                name="status"
-                                required
+                                id="workflowTemplateId"
+                                name="workflowTemplateId"
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <option value="OUVERT">Ouvert</option>
-                                <option value="EN_COURS">En Cours</option>
-                                <option value="CLOTURE">Clôturé</option>
-                                <option value="ARCHIVE">Archivé</option>
+                                <option value="">Aucun workflow</option>
+                                <option value="VENTE_IMMOBILIERE">Vente Immobilière (Standard)</option>
+                                {db.workflows.map((template) => (
+                                    <option key={template.id} value={template.id}>
+                                        {template.title}
+                                    </option>
+                                ))}
                             </select>
                         </div>
+                    </div>
+                    <div className="space-y-2">
+                        <label htmlFor="status" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Statut</label>
+                        <select
+                            id="status"
+                            name="status"
+                            required
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <option value="OUVERT">Ouvert</option>
+                            <option value="EN_COURS">En Cours</option>
+                            <option value="CLOTURE">Clôturé</option>
+                            <option value="ARCHIVE">Archivé</option>
+                        </select>
                     </div>
 
                     <div className="space-y-2">
@@ -79,10 +95,27 @@ export default function NewDossierPage() {
                         </select>
                     </div>
 
+                    <div className="space-y-2">
+                        <label htmlFor="assignedTo" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Responsable (Notaire)</label>
+                        <select
+                            id="assignedTo"
+                            name="assignedTo"
+                            required
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <option value="">Sélectionner un responsable</option>
+                            {db.users.map((user) => (
+                                <option key={user.id} value={user.id}>
+                                    {user.firstName} {user.lastName} ({user.role})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="flex justify-end pt-4">
                         <button
                             type="submit"
-                            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-slate-900 text-white hover:bg-slate-800 h-10 px-4 py-2"
+                            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
                         >
                             Créer le dossier
                         </button>

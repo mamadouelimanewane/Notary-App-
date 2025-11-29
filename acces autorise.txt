@@ -1,0 +1,10 @@
+PS C:\gravity> cd notary-app
+PS C:\gravity\notary-app> node seed-users.js
+✅ Users seeded successfully!
+📧 Credentials:
+   Admin: admin@notary.fr / admin123
+   Notaire: marie.dubois@notary.fr / notaire123
+   Clerc: jean.martin@notary.fr / clerc123
+PS C:\gravity\notary-app>
+
+Stop-Process -Name node -Force -ErrorAction SilentlyContinue

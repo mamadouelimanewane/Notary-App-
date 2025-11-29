@@ -1,88 +1,102 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { requireAdmin } from '@/lib/adminMiddleware';
-import { db } from '@/lib/db';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { getCurrentUser, requirePermission, logSecurityEvent } from "@/lib/auth-guard";
+import bcrypt from "bcryptjs";
 
-// PUT - Modifier un utilisateur
-export async function PUT(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
-    try {
-        const session = await getServerSession(authOptions);
-        await requireAdmin(session);
-
-        const { id } = params;
-        const updates = await req.json();
-
-        // Ne pas permettre de modifier son propre statut actif
-        if (id === session.user.id && updates.isActive === false) {
-            return NextResponse.json({ error: 'Vous ne pouvez pas vous désactiver vous-même' }, { status: 400 });
-        }
-
-        // Si modification de mot de passe
-        if (updates.password) {
-            const bcrypt = require('bcryptjs');
-            updates.password = await bcrypt.hash(updates.password, 10);
-        }
-
-        const updatedUser = db.updateUser(id, updates);
-
-        if (!updatedUser) {
-            return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
-        }
-
-        return NextResponse.json({
-            success: true,
-            user: {
-                id: updatedUser.id,
-                firstName: updatedUser.firstName,
-                lastName: updatedUser.lastName,
-                email: updatedUser.email,
-                role: updatedUser.role,
-                isActive: updatedUser.isActive
-            }
-        });
-
-    } catch (error: any) {
-        console.error('Error updating user:', error);
-        if (error.message.includes('Unauthorized') || error.message.includes('Forbidden')) {
-            return NextResponse.json({ error: error.message }, { status: 403 });
-        }
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
+interface Props {
+    params: { id: string };
 }
 
-// DELETE - Désactiver un utilisateur
-export async function DELETE(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest, { params }: Props) {
     try {
-        const session = await getServerSession(authOptions);
-        await requireAdmin(session);
-
-        const { id } = params;
-
-        // Ne pas permettre de se désactiver soi-même
-        if (id === session.user.id) {
-            return NextResponse.json({ error: 'Vous ne pouvez pas vous désactiver vous-même' }, { status: 400 });
+        const currentUser = await getCurrentUser();
+        if (!currentUser) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const success = db.deleteUser(id);
-
-        if (!success) {
-            return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
+        try {
+            await requirePermission('MANAGE_USERS');
+        } catch (e) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
+
+        const body = await req.json();
+        const { firstName, lastName, email, password, role, isActive } = body;
+
+        const user = db.users.find(u => u.id === params.id);
+        if (!user) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+
+        const updates: any = {
+            firstName,
+            lastName,
+            email,
+            role,
+            isActive
+        };
+
+        if (password) {
+            updates.password = await bcrypt.hash(password, 10);
+            updates.passwordChangedAt = new Date().toISOString();
+        }
+
+        db.updateUser(params.id, updates);
+
+        await logSecurityEvent(
+            currentUser.id,
+            `${currentUser.firstName} ${currentUser.lastName}`,
+            "UPDATE_USER",
+            "USER",
+            params.id,
+            `Updated user ${email}`
+        );
 
         return NextResponse.json({ success: true });
 
     } catch (error: any) {
-        console.error('Error deleting user:', error);
-        if (error.message.includes('Unauthorized') || error.message.includes('Forbidden')) {
-            return NextResponse.json({ error: error.message }, { status: 403 });
+        console.error("Error updating user:", error);
+        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    }
+}
+
+export async function DELETE(req: NextRequest, { params }: Props) {
+    try {
+        const currentUser = await getCurrentUser();
+        if (!currentUser) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+
+        try {
+            await requirePermission('MANAGE_USERS');
+        } catch (e) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+
+        if (currentUser.id === params.id) {
+            return NextResponse.json({ error: "Cannot delete yourself" }, { status: 400 });
+        }
+
+        const user = db.users.find(u => u.id === params.id);
+        if (!user) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+
+        db.deleteUser(params.id); // Soft delete
+
+        await logSecurityEvent(
+            currentUser.id,
+            `${currentUser.firstName} ${currentUser.lastName}`,
+            "DELETE_USER",
+            "USER",
+            params.id,
+            `Deactivated user ${user.email}`
+        );
+
+        return NextResponse.json({ success: true });
+
+    } catch (error: any) {
+        console.error("Error deleting user:", error);
+        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
     }
 }

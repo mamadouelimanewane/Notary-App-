@@ -11,6 +11,7 @@ async function seedUsers() {
     const adminPassword = await bcrypt.hash('admin123', 10);
     const notairePassword = await bcrypt.hash('notaire123', 10);
     const clercPassword = await bcrypt.hash('clerc123', 10);
+    const comptablePassword = await bcrypt.hash('comptable123', 10);
 
     const users = [
         {
@@ -42,6 +43,16 @@ async function seedUsers() {
             role: 'CLERC',
             createdAt: new Date().toISOString(),
             isActive: true
+        },
+        {
+            id: 'user-comptable',
+            firstName: 'Pierre',
+            lastName: 'Durand',
+            email: 'pierre.durand@notary.fr',
+            password: comptablePassword,
+            role: 'COMPTABLE',
+            createdAt: new Date().toISOString(),
+            isActive: true
         }
     ];
 
@@ -52,6 +63,7 @@ async function seedUsers() {
     console.log('   Admin: admin@notary.fr / admin123');
     console.log('   Notaire: marie.dubois@notary.fr / notaire123');
     console.log('   Clerc: jean.martin@notary.fr / clerc123');
+    console.log('   Comptable: pierre.durand@notary.fr / comptable123');
 }
 
 seedUsers().catch(console.error);

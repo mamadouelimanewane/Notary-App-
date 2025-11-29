@@ -22,6 +22,8 @@ export default async function AdminDashboardPage() {
         NOTAIRE: users.filter(u => u.role === 'NOTAIRE').length,
         CLERC: users.filter(u => u.role === 'CLERC').length,
         ASSISTANT: users.filter(u => u.role === 'ASSISTANT').length,
+        COMPTABLE: users.filter(u => u.role === 'COMPTABLE').length,
+        SECRETAIRE: users.filter(u => u.role === 'SECRETAIRE').length,
     };
 
     return (
@@ -81,8 +83,12 @@ export default async function AdminDashboardPage() {
                                 <span className="font-semibold">{usersByRole.CLERC}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Assistants :</span>
-                                <span className="font-semibold">{usersByRole.ASSISTANT}</span>
+                                <span>Comptables :</span>
+                                <span className="font-semibold">{usersByRole.COMPTABLE}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Secrétaires :</span>
+                                <span className="font-semibold">{usersByRole.SECRETAIRE}</span>
                             </div>
                         </div>
                     </div>
@@ -103,14 +109,14 @@ export default async function AdminDashboardPage() {
                     </div>
                 </Link>
 
-                <Link href="/dashboard/admin/privileges" className="group rounded-xl border bg-white p-6 hover:shadow-lg transition-all">
+                <Link href="/dashboard/admin/audit" className="group rounded-xl border bg-white p-6 hover:shadow-lg transition-all">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-lg bg-green-100 group-hover:bg-green-200 transition-colors">
-                            <Shield className="h-6 w-6 text-green-600" />
+                        <div className="p-3 rounded-lg bg-orange-100 group-hover:bg-orange-200 transition-colors">
+                            <Activity className="h-6 w-6 text-orange-600" />
                         </div>
                         <div>
-                            <h3 className="font-semibold text-lg">Gérer les privilèges</h3>
-                            <p className="text-sm text-muted-foreground mt-1">Matrice des permissions par rôle</p>
+                            <h3 className="font-semibold text-lg">Journal d'Audit</h3>
+                            <p className="text-sm text-muted-foreground mt-1">Traçabilité des actions sensibles</p>
                         </div>
                     </div>
                 </Link>
@@ -123,6 +129,18 @@ export default async function AdminDashboardPage() {
                         <div>
                             <h3 className="font-semibold text-lg">Paramètres de l'application</h3>
                             <p className="text-sm text-muted-foreground mt-1">Configuration générale, facturation, sécurité</p>
+                        </div>
+                    </div>
+                </Link>
+
+                <Link href="/dashboard/admin/backups" className="group rounded-xl border bg-white p-6 hover:shadow-lg transition-all">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-lg bg-cyan-100 group-hover:bg-cyan-200 transition-colors">
+                            <Shield className="h-6 w-6 text-cyan-600" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-lg">Sauvegardes</h3>
+                            <p className="text-sm text-muted-foreground mt-1">Gérer les backups et restaurations</p>
                         </div>
                     </div>
                 </Link>

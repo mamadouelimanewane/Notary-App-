@@ -2,37 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    /* Slate 900 */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  /* Thème Bleu (Notaire Classique) */
+  .theme-blue {
+    --primary: 221.2 83.2% 53.3%;
+    /* Blue 600 */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --ring: 221.2 83.2% 53.3%;
+  }
+
+  /* Thème Gold (Premium) */
+  .theme-gold {
+    --primary: 24 95% 53%;
+    /* Orange/Gold */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 20 14% 96%;
+    --secondary-foreground: 24 95% 53%;
+    --ring: 24 95% 53%;
+  }
+
+  /* Thème Green (Nature) */
+  .theme-green {
+    --primary: 142.1 76.2% 36.3%;
+    /* Green 600 */
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 142 69% 96%;
+    --secondary-foreground: 142.1 76.2% 36.3%;
+    --ring: 142.1 76.2% 36.3%;
+  }
+
+  /* Typography Classes */
+  .font-sans {
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .font-serif {
+    font-family: var(--font-serif), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 /* ==================== PRINT STYLES ==================== */
 @media print {
-
-  /* Page setup */
   @page {
     size: A4;
     margin: 2cm;
   }
 
-  /* Hide non-printable elements */
   body.printing nav,
   body.printing header,
   body.printing footer,
@@ -44,7 +102,6 @@ body {
     display: none !important;
   }
 
-  /* Reset body styles */
   body {
     background: white !important;
     color: black !important;
@@ -52,7 +109,6 @@ body {
     padding: 0;
   }
 
-  /* Print container */
   .print-container {
     width: 100%;
     max-width: 100%;
@@ -62,7 +118,6 @@ body {
     color: black;
   }
 
-  /* Typography for print */
   .print-container * {
     color: black !important;
     background: transparent !important;
@@ -76,7 +131,6 @@ body {
     break-after: avoid;
   }
 
-  /* Tables */
   .print-container table {
     page-break-inside: auto;
     border-collapse: collapse;
@@ -96,13 +150,11 @@ body {
     display: table-footer-group;
   }
 
-  /* Print header */
   .print-header {
     page-break-after: avoid;
     margin-bottom: 1.5rem;
   }
 
-  /* Borders and backgrounds for print */
   .print-container .border-slate-900,
   .print-container .border-slate-300,
   .print-container .border-slate-200 {
@@ -113,13 +165,11 @@ body {
     background: #f5f5f5 !important;
   }
 
-  /* Ensure good contrast */
   .print-container .text-slate-600,
   .print-container .text-slate-700 {
     color: #333 !important;
   }
 
-  /* Page breaks */
   .page-break-before {
     page-break-before: always;
   }
@@ -132,13 +182,11 @@ body {
     page-break-inside: avoid;
   }
 
-  /* Links */
   .print-container a {
     text-decoration: none;
     color: inherit !important;
   }
 
-  /* Hide scroll bars */
   * {
     overflow: visible !important;
   }

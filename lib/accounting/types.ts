@@ -48,6 +48,7 @@ export interface AccountEntry {
  */
 export interface JournalEntry {
     id: string;
+    journalId: string;      // ID du journal (ex: "ACHATS", "BANQUE")
     date: string;
     reference: string;      // Ex: "FAC-2024-001", "PAY-123"
     label: string;          // Libellé général
@@ -57,6 +58,7 @@ export interface JournalEntry {
     validated: boolean;     // Écriture validée
     createdAt: string;
     createdBy: string;      // userId
+    metadata?: any;         // Métadonnées additionnelles (invoiceId, paymentId, type, etc.)
 }
 
 /**
